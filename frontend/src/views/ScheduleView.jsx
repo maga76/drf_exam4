@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
 import {
-  CalendarDays,
   Plus,
-  Sparkles,
   Download,
-  Share2,
-  Archive,
   AlertTriangle,
   Edit2,
   Trash2,
-  Filter,
-  Search,
-  CheckCircle,
-  Eye,
-  ChevronLeft,
-  ChevronRight
+  CircleCheck,
+  CalendarRange,
+  WandSparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { Input, Select } from '../components/ui/Input';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -164,29 +155,32 @@ export const ScheduleView = () => {
   };
 
   const colorStyles = {
-    indigo: "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200/80 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200",
-    blue: "bg-blue-50 dark:bg-blue-950/60 border-blue-200/80 dark:border-blue-800 text-blue-900 dark:text-blue-200",
-    emerald: "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/80 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200",
-    teal: "bg-teal-50 dark:bg-teal-950/60 border-teal-200/80 dark:border-teal-800 text-teal-900 dark:text-teal-200",
-    amber: "bg-amber-50 dark:bg-amber-950/60 border-amber-200/80 dark:border-amber-800 text-amber-900 dark:text-amber-200",
-    purple: "bg-purple-50 dark:bg-purple-950/60 border-purple-200/80 dark:border-purple-800 text-purple-900 dark:text-purple-200",
-    violet: "bg-violet-50 dark:bg-violet-950/60 border-violet-200/80 dark:border-violet-800 text-violet-900 dark:text-violet-200",
-    cyan: "bg-cyan-50 dark:bg-cyan-950/60 border-cyan-200/80 dark:border-cyan-800 text-cyan-900 dark:text-cyan-200",
-    lime: "bg-lime-50 dark:bg-lime-950/60 border-lime-200/80 dark:border-lime-800 text-lime-900 dark:text-lime-200",
-    rose: "bg-rose-50 dark:bg-rose-950/60 border-rose-200/80 dark:border-rose-800 text-rose-900 dark:text-rose-200",
-    orange: "bg-orange-50 dark:bg-orange-950/60 border-orange-200/80 dark:border-orange-800 text-orange-900 dark:text-orange-200"
+    indigo: "border-l-indigo-500 bg-indigo-50/50",
+    blue: "border-l-blue-500 bg-blue-50/50",
+    emerald: "border-l-emerald-500 bg-emerald-50/50",
+    teal: "border-l-teal-500 bg-teal-50/50",
+    amber: "border-l-amber-500 bg-amber-50/50",
+    purple: "border-l-purple-500 bg-purple-50/50",
+    violet: "border-l-violet-500 bg-violet-50/50",
+    cyan: "border-l-cyan-500 bg-cyan-50/50",
+    lime: "border-l-lime-500 bg-lime-50/50",
+    rose: "border-l-rose-500 bg-rose-50/50",
+    orange: "border-l-orange-500 bg-orange-50/50"
   };
 
   return (
     <div className="space-y-5">
       {/* Action Bar Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Расписание уроков
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            2025–2026 уч. год • 1-я смена • Интерактивная недельная сетка
+          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 mb-2">
+            <CalendarRange className="w-4 h-4" /> Учебный процесс
+          </div>
+          <h1 className="text-2xl sm:text-[30px] font-extrabold tracking-[-0.03em] text-[#14213d] dark:text-white">
+            Расписание на неделю
+          </h1>
+          <p className="text-sm text-slate-500 mt-1.5">
+            29 сентября — 4 октября · первая смена
           </p>
         </div>
 
@@ -195,10 +189,10 @@ export const ScheduleView = () => {
           <Button
             size="sm"
             variant="outline"
-            icon={Sparkles}
+            icon={WandSparkles}
             onClick={() => setActiveView('scheduleWizard')}
           >
-            Сгенерировать автоматически
+            Собрать расписание
           </Button>
           <Button
             size="sm"
@@ -213,19 +207,17 @@ export const ScheduleView = () => {
             icon={Plus}
             onClick={() => handleOpenAddModal(1, 1)}
           >
-            Создать урок
+            Добавить урок
           </Button>
         </div>
       </div>
 
       {/* Conflict Warning Alert Banner */}
       {hasConflict && (
-        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 flex items-center justify-between gap-3 text-xs sm:text-sm text-amber-800 dark:text-amber-300">
+        <div className="p-4 rounded-[18px] bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-950">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-            <span>
-              <strong>Обнаружен конфликт:</strong> В среду на 4-м уроке кабинет 102 занят одновременно двумя классами (7А и 9Б).
-            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0"><AlertTriangle className="w-4 h-4 text-amber-700" /></div>
+            <span><strong>Нужно проверить кабинет 102.</strong> В среду на 4-м уроке он назначен сразу для 7А и 9Б.</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -242,14 +234,14 @@ export const ScheduleView = () => {
       )}
 
       {/* Filter and View Switcher Toolbar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-card flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="p-3 rounded-[18px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-[0_6px_24px_rgba(15,23,42,0.04)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         {/* View Mode Pills: by Class / by Teacher / by Room */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl self-start">
+        <div className="flex items-center gap-1 p-1 bg-[#f1f4f8] dark:bg-slate-800 rounded-xl self-start">
           <button
             onClick={() => setViewMode('class')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'class'
-                ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -259,7 +251,7 @@ export const ScheduleView = () => {
             onClick={() => setViewMode('teacher')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'teacher'
-                ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -269,7 +261,7 @@ export const ScheduleView = () => {
             onClick={() => setViewMode('room')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'room'
-                ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
                 : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -326,7 +318,7 @@ export const ScheduleView = () => {
 
           <Button
             size="sm"
-            variant="ghost"
+            icon={CircleCheck}
             onClick={() => addToast({ type: 'success', title: 'Опубликовано', message: 'Расписание опубликовано для всех учеников и учителей' })}
           >
             Опубликовать
@@ -352,18 +344,18 @@ export const ScheduleView = () => {
       </div>
 
       {/* Desktop Weekly Grid (Mon-Sat, 6 columns + time column) */}
-      <div className="hidden md:block overflow-x-auto border border-slate-200/80 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 shadow-card">
+      <div className="hidden md:block overflow-x-auto border border-slate-200/80 dark:border-slate-800 rounded-[22px] bg-white dark:bg-slate-900 shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-[#f8fafc] dark:bg-slate-800/40">
               <th className="p-3 w-28 text-xs font-semibold text-slate-400 uppercase tracking-wider text-center">
                 Урок / Время
               </th>
               {days.map((d) => (
                 <th key={d.day} className="p-3 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-l border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center justify-between">
-                    <span>{d.name}</span>
-                    <span className="text-[11px] font-normal text-slate-400 lowercase">{d.short}</span>
+                  <div>
+                    <span className="block text-[11px]">{d.name}</span>
+                    <span className="block mt-1 text-[11px] font-normal text-slate-400 normal-case">{28 + d.day} сентября</span>
                   </div>
                 </th>
               ))}
@@ -371,7 +363,7 @@ export const ScheduleView = () => {
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {slots.map((slot) => (
-              <tr key={slot.number} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/20 transition-colors">
+              <tr key={slot.number} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors">
                 {/* Time Slot column */}
                 <td className="p-3 text-center align-top bg-slate-50/40 dark:bg-slate-800/20">
                   <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -395,13 +387,13 @@ export const ScheduleView = () => {
                       {lesson ? (
                         <div
                           onClick={() => handleOpenEditModal(lesson)}
-                          className={`p-2.5 rounded-xl border text-xs shadow-xs cursor-pointer hover:shadow-card hover:scale-[1.02] transition-all relative group ${
+                          className={`p-3 rounded-xl border border-slate-200 border-l-[3px] text-xs cursor-pointer hover:border-slate-300 hover:shadow-md transition-all relative group ${
                             colorStyles[lesson.color] || colorStyles.indigo
-                          } ${isNowActive ? 'ring-2 ring-indigo-500' : ''}`}
+                          } ${isNowActive ? 'ring-2 ring-blue-500 ring-offset-1' : ''}`}
                         >
                           {/* Subject & Quick actions */}
                           <div className="flex items-start justify-between gap-1 mb-1">
-                            <span className="font-bold text-sm tracking-tight truncate">
+                            <span className="font-bold text-[13px] tracking-tight truncate text-slate-900">
                               {lesson.subjectName}
                             </span>
                             <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
@@ -419,14 +411,14 @@ export const ScheduleView = () => {
                             </div>
                           </div>
 
-                          <div className="text-[11px] opacity-80 truncate">
+                          <div className="text-[11px] text-slate-500 truncate">
                             {viewMode === 'class' ? lesson.teacherName : lesson.className}
                           </div>
 
-                          <div className="mt-2 flex items-center justify-between text-[10px] font-semibold opacity-90 pt-1 border-t border-current/15">
+                          <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-slate-500 pt-1.5 border-t border-slate-200/70">
                             <span>Каб. {lesson.roomNumber}</span>
                             {isNowActive && (
-                              <span className="text-emerald-700 dark:text-emerald-300 font-bold uppercase tracking-wider animate-pulse">
+                              <span className="text-blue-700 font-bold uppercase tracking-wider">
                                 Сейчас
                               </span>
                             )}
@@ -435,7 +427,7 @@ export const ScheduleView = () => {
                       ) : (
                         <button
                           onClick={() => handleOpenAddModal(d.day, slot.number)}
-                          className="w-full h-full min-h-[70px] rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 text-slate-300 hover:text-indigo-600 flex items-center justify-center transition-all group"
+                          className="w-full h-full min-h-[76px] rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-300 hover:bg-blue-50/30 text-slate-300 hover:text-blue-600 flex items-center justify-center transition-all group"
                           title="Добавить урок в этот слот"
                         >
                           <Plus className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />

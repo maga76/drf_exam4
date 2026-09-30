@@ -12,7 +12,7 @@ export const Layout = ({ children }) => {
   // If user is on the Auth screen, render it full screen without sidebar/topbar
   if (activeView === 'auth') {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center">
+      <div className="min-h-screen bg-[#f4f6fa] dark:bg-[#080f20] text-slate-900 dark:text-slate-100 flex flex-col justify-center">
         {children}
         <ToastContainer />
       </div>
@@ -20,7 +20,7 @@ export const Layout = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen flex bg-[#f4f6fa] dark:bg-[#080f20] text-slate-900 dark:text-slate-100">
       {/* Desktop Sidebar */}
       <Sidebar />
 
@@ -28,7 +28,7 @@ export const Layout = ({ children }) => {
       <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
         <Topbar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:px-8 lg:py-7 max-w-[1680px] w-full mx-auto">
           {children}
         </main>
       </div>

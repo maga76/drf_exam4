@@ -14,7 +14,7 @@ export const Button = ({
   type = 'button',
   ...props
 }) => {
-  const baseStyles = "inline-flex items-center justify-center font-medium rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]";
+  const baseStyles = "inline-flex items-center justify-center font-semibold rounded-[11px] transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]";
 
   const sizes = {
     sm: "px-2.5 py-1.5 text-xs gap-1.5",
@@ -24,9 +24,9 @@ export const Button = ({
   };
 
   const variants = {
-    primary: "bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 shadow-sm focus:ring-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500",
+    primary: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm shadow-blue-900/10 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500",
     secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300 focus:ring-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700",
-    outline: "border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus:ring-indigo-500 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800",
+    outline: "border border-slate-300/80 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 active:bg-slate-100 focus:ring-blue-500 dark:bg-transparent dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5",
     ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus:ring-slate-300 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100",
     danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-sm focus:ring-rose-500 dark:bg-rose-600 dark:hover:bg-rose-500",
     accent: "bg-teal-600 text-white hover:bg-teal-700 active:bg-teal-800 shadow-sm focus:ring-teal-500 dark:bg-teal-600 dark:hover:bg-teal-500"

@@ -1,28 +1,48 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-  Users,
-  GraduationCap,
+  ArrowUpRight,
   CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  CircleAlert,
   DoorOpen,
-  UserX,
-  Repeat,
-  Radio,
-  Plus,
-  ArrowRight,
-  Clock,
-  Sparkles,
-  CheckCircle,
-  AlertTriangle,
+  GraduationCap,
   Megaphone,
-  CheckSquare
+  Plus,
+  Radio,
+  Repeat2,
+  Sparkles,
+  UserRoundCheck,
+  UsersRound
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Card, CardHeader } from '../components/ui/Card';
-import { StatsCard } from '../components/ui/StatsCard';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Modal } from '../components/ui/Modal';
-import { Input, Select, Textarea } from '../components/ui/Input';
+
+
+const Metric = ({ icon: Icon, label, value, detail, color }) => {
+  const colors = {
+    blue: 'bg-blue-50 text-blue-700',
+    amber: 'bg-amber-50 text-amber-700',
+    green: 'bg-emerald-50 text-emerald-700',
+    violet: 'bg-violet-50 text-violet-700'
+  };
+
+  return (
+    <div className="flex items-center gap-3 min-w-0">
+      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${colors[color]}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[24px] leading-none font-extrabold tracking-tight text-[#14213d] dark:text-white">{value}</div>
+        <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1 truncate">{label}</div>
+        <div className="text-[10px] text-slate-400 mt-0.5 truncate">{detail}</div>
+      </div>
+    </div>
+  );
+};
+
 
 export const AdminDashboardView = () => {
   const {
@@ -36,456 +56,181 @@ export const AdminDashboardView = () => {
     announcements,
     dashboardStats,
     backendConnected,
-    setActiveView,
-    addToast
+    setActiveView
   } = useApp();
 
-  // Modals for Quick Actions
-  const [newSubstModalOpen, setNewSubstModalOpen] = useState(false);
-  const [newAnnounceModalOpen, setNewAnnounceModalOpen] = useState(false);
-  const [newStudentModalOpen, setNewStudentModalOpen] = useState(false);
-
-  // Form states
-  const [announceForm, setAnnounceForm] = useState({ title: '', target: 'all', content: '' });
-
-  const freeTeachers = teachers.filter(t => t.status === 'free');
-  const absentTeachers = teachers.filter(t => t.status === 'absent' || t.status === 'sick');
-  const freeRooms = classrooms.filter(c => c.status === 'free');
+  const freeTeachers = teachers.filter(item => item.status === 'free');
+  const absentTeachers = teachers.filter(item => ['absent', 'sick'].includes(item.status));
+  const freeRooms = classrooms.filter(item => item.status === 'free');
+  const activeLessons = liveLessons.filter(item => item.status !== 'cancelled');
 
   return (
     <div className="space-y-6">
-      {/* Top Greeting & Date Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Добрый день, {currentUser.name}! 👋
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Среда, 30 сентября 2026 г. • 1-я смена • {currentSchool.name}
-          </p>
-          <p className={`text-xs mt-1 ${backendConnected ? 'text-emerald-600' : 'text-amber-600'}`}>
-            {backendConnected ? 'Backend connected' : 'Demo data'}
-          </p>
-        </div>
+      <section className="relative overflow-hidden rounded-[28px] bg-[#0b1739] text-white px-6 py-6 sm:px-8 sm:py-7 shadow-[0_20px_50px_rgba(11,23,57,0.18)]">
+        <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full border-[42px] border-blue-400/10" />
+        <div className="absolute right-28 bottom-[-80px] w-52 h-52 rounded-full bg-blue-500/10 blur-2xl" />
 
-        {/* Quick Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            icon={Sparkles}
-            onClick={() => setActiveView('scheduleWizard')}
-          >
-            Генератор расписания
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            icon={Repeat}
-            onClick={() => setNewSubstModalOpen(true)}
-          >
-            Оформить замену
-          </Button>
-          <Button
-            size="sm"
-            icon={Megaphone}
-            onClick={() => setNewAnnounceModalOpen(true)}
-          >
-            Создать объявление
-          </Button>
-        </div>
-      </div>
-
-      {/* Metric Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatsCard
-          title="Всего учителей"
-          value={dashboardStats?.teachers ?? teachers.length}
-          subtitle="В штате школы"
-          icon={GraduationCap}
-          trend={{ value: "+2", isPositive: true }}
-          color="indigo"
-          onClick={() => setActiveView('teachers')}
-        />
-        <StatsCard
-          title="Классов"
-          value={dashboardStats?.grades ?? classes.length}
-          subtitle="1–11 классы"
-          icon={Users}
-          color="teal"
-          onClick={() => setActiveView('classes')}
-        />
-        <StatsCard
-          title="Уроков сегодня"
-          value={dashboardStats?.lessons ?? 184}
-          subtitle="Идут по графику"
-          icon={CalendarDays}
-          color="violet"
-          onClick={() => setActiveView('schedule')}
-        />
-        <StatsCard
-          title="Отсутствуют"
-          value={dashboardStats?.absent_teachers ?? absentTeachers.length}
-          subtitle="Учителей на больничном"
-          icon={UserX}
-          color="rose"
-          onClick={() => setActiveView('substitutions')}
-        />
-        <StatsCard
-          title="Свободные кабинеты"
-          value={freeRooms.length}
-          subtitle="Доступны прямо сейчас"
-          icon={DoorOpen}
-          color="emerald"
-          onClick={() => setActiveView('classrooms')}
-        />
-      </div>
-
-      {/* Main Grid: Live Lessons & Free Resources */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 spans): Currently Live Lessons */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader
-              title="Сейчас идут уроки (2-й урок, 08:50 – 09:35)"
-              subtitle="Мониторинг классов и посещаемости в реальном времени"
-              action={
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  icon={ArrowRight}
-                  iconPosition="right"
-                  onClick={() => setActiveView('liveLessons')}
-                >
-                  Все живые уроки
-                </Button>
-              }
-            />
-
-            <div className="space-y-3">
-              {liveLessons.slice(0, 4).map((lesson) => {
-                const statusBadges = {
-                  ongoing: <Badge variant="success" dot>Идёт</Badge>,
-                  endingSoon: <Badge variant="warning" dot>Скоро закончится ({lesson.timeRemaining})</Badge>,
-                  replacement: <Badge variant="purple" dot>Замена учителя</Badge>,
-                  cancelled: <Badge variant="danger" dot>Отменён</Badge>
-                };
-
-                return (
-                  <div
-                    key={lesson.id}
-                    className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold flex items-center justify-center shrink-0">
-                        {lesson.className}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                            {lesson.subject}
-                          </span>
-                          {statusBadges[lesson.status]}
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          {lesson.teacher} • <span className="text-indigo-600 dark:text-indigo-400">{lesson.room}</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">
-                      {lesson.attendanceChecked ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5" /> {lesson.presentCount}/{lesson.totalStudents} уч.
-                        </span>
-                      ) : (
-                        <span className="text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> Не отмечено
-                        </span>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setActiveView('attendance')}
-                      >
-                        Журнал
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+        <div className="relative grid lg:grid-cols-[1fr_auto] gap-6 items-end">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-xs font-semibold text-blue-100">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              Школа работает штатно
             </div>
-          </Card>
+            <h1 className="mt-4 text-2xl sm:text-[32px] leading-tight font-extrabold tracking-[-0.03em]">
+              Добрый день, {currentUser.name.split(' ')[0] || 'директор'}
+            </h1>
+            <p className="mt-2 text-sm text-blue-100/65 max-w-xl">
+              Вторник, 30 сентября · {currentSchool.name}. На сегодня запланировано {dashboardStats?.lessons ?? 184} урока.
+            </p>
+          </div>
 
-          {/* Upcoming Substitutions Section */}
-          <Card>
-            <CardHeader
-              title="Предстоящие замены"
-              subtitle="Назначенные и требующие подтверждения замены преподавателей"
-              action={
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  icon={ArrowRight}
-                  iconPosition="right"
-                  onClick={() => setActiveView('substitutions')}
-                >
-                  Все замены ({substitutions.length})
-                </Button>
-              }
-            />
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" icon={Repeat2} className="!border-white/20 !bg-white/10 !text-white hover:!bg-white/15" onClick={() => setActiveView('substitutions')}>
+              Оформить замену
+            </Button>
+            <Button icon={Plus} className="!bg-amber-400 !text-[#0b1739] hover:!bg-amber-300" onClick={() => setActiveView('announcements')}>
+              Объявление
+            </Button>
+          </div>
+        </div>
+      </section>
 
-            <div className="space-y-2.5">
-              {substitutions.slice(0, 3).map((sub) => (
-                <div
-                  key={sub.id}
-                  className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 text-xs sm:text-sm"
-                >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100">
-                        {sub.className} • {sub.subject} ({sub.lessonNumber}-й урок)
-                      </span>
-                      {sub.status === 'confirmed' ? (
-                        <Badge variant="success" size="sm">Подтверждено</Badge>
-                      ) : (
-                        <Badge variant="warning" size="sm">Ожидает</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">
-                      {sub.originalTeacher} &rarr; <span className="font-medium text-slate-700 dark:text-slate-300">{sub.replacementTeacher}</span> (Каб. {sub.room})
-                    </p>
+      <Card className="!p-5 sm:!p-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:divide-x divide-slate-100 dark:divide-white/10">
+          <Metric icon={GraduationCap} label="Учителей" value={dashboardStats?.teachers ?? teachers.length} detail={`${freeTeachers.length} свободны сейчас`} color="blue" />
+          <div className="lg:pl-6"><Metric icon={UsersRound} label="Классов" value={dashboardStats?.grades ?? classes.length} detail="31 класс в двух сменах" color="violet" /></div>
+          <div className="lg:pl-6"><Metric icon={CalendarDays} label="Уроков сегодня" value={dashboardStats?.lessons ?? 184} detail={`${activeLessons.length} идут прямо сейчас`} color="green" /></div>
+          <div className="lg:pl-6"><Metric icon={CircleAlert} label="Требуют внимания" value={(dashboardStats?.absent_teachers ?? absentTeachers.length) + 2} detail="Отсутствия и замены" color="amber" /></div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.45fr_0.8fr] gap-6">
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 sm:px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Radio className="w-4 h-4 text-red-500" />
+                <h2 className="font-bold text-lg text-[#14213d] dark:text-white">Школа сейчас</h2>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">2-й урок · 08:50–09:35 · осталось 17 минут</p>
+            </div>
+            <button onClick={() => setActiveView('liveLessons')} className="text-xs font-bold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all">
+              Открыть монитор <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="divide-y divide-slate-100 dark:divide-white/10">
+            {activeLessons.slice(0, 5).map((lesson, index) => (
+              <button
+                key={lesson.id}
+                onClick={() => setActiveView('liveLessons')}
+                className="w-full px-5 sm:px-6 py-4 flex items-center gap-4 hover:bg-blue-50/40 dark:hover:bg-white/[0.03] text-left transition-colors"
+              >
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-extrabold text-sm ${index % 3 === 0 ? 'bg-blue-50 text-blue-700' : index % 3 === 1 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                  {lesson.className}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm text-slate-800 dark:text-white truncate">{lesson.subject}</div>
+                  <div className="text-xs text-slate-400 mt-0.5 truncate">{lesson.teacher} · {lesson.room}</div>
+                </div>
+                <div className="hidden sm:block text-right">
+                  <div className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    {lesson.attendanceChecked ? `${lesson.presentCount}/${lesson.totalStudents} в классе` : 'Не отмечено'}
                   </div>
-
-                  <div className="shrink-0 text-right">
-                    <span className="text-xs text-slate-400 block">{sub.date}</span>
-                    <button
-                      onClick={() => setActiveView('substitutions')}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-                    >
-                      Подробнее
-                    </button>
+                  <div className={`text-[10px] mt-1 font-bold ${lesson.attendanceChecked ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    {lesson.attendanceChecked ? 'Посещаемость заполнена' : 'Нужна отметка'}
                   </div>
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+                <ArrowUpRight className="w-4 h-4 text-slate-300" />
+              </button>
+            ))}
+          </div>
+        </Card>
 
-        {/* Right Column: Attendance Rate, Free Resources & Recent Announcements */}
         <div className="space-y-6">
-          {/* Attendance Widget */}
           <Card>
-            <CardHeader
-              title="Посещаемость сегодня"
-              subtitle="Общешкольный показатель"
-            />
-            <div className="text-center py-2">
-              <div className="inline-flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                  96.8%
-                </span>
-                <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
-                  +1.2%
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">1,200 из 1,240 учеников в школе</p>
-            </div>
-
-            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 mt-3 overflow-hidden">
-              <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: '96.8%' }} />
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-500">Болеют: 28</span>
-              <span className="text-slate-500">Уважительная: 12</span>
-              <button
-                onClick={() => setActiveView('attendance')}
-                className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-              >
-                Подробная аналитика &rarr;
+            <CardHeader title="Нужно решить сегодня" subtitle="Задачи, которые нельзя пропустить" />
+            <div className="space-y-2.5">
+              <button onClick={() => setActiveView('substitutions')} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-amber-50/80 hover:bg-amber-50 text-left">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center"><Repeat2 className="w-4 h-4" /></div>
+                <div className="flex-1"><div className="text-sm font-bold text-slate-800">2 замены без подтверждения</div><div className="text-[11px] text-slate-500 mt-0.5">Первый урок начнётся через 40 минут</div></div>
+                <ChevronRight className="w-4 h-4 text-amber-500" />
+              </button>
+              <button onClick={() => setActiveView('attendance')} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-blue-50/70 hover:bg-blue-50 text-left">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center"><UserRoundCheck className="w-4 h-4" /></div>
+                <div className="flex-1"><div className="text-sm font-bold text-slate-800">7 журналов не заполнены</div><div className="text-[11px] text-slate-500 mt-0.5">За вчерашнюю вторую смену</div></div>
+                <ChevronRight className="w-4 h-4 text-blue-500" />
+              </button>
+              <button onClick={() => setActiveView('schedule')} className="w-full flex items-center gap-3 p-3 rounded-2xl bg-emerald-50/70 hover:bg-emerald-50 text-left">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><CheckCircle2 className="w-4 h-4" /></div>
+                <div className="flex-1"><div className="text-sm font-bold text-slate-800">Расписание готово</div><div className="text-[11px] text-slate-500 mt-0.5">Можно опубликовать изменения</div></div>
+                <ChevronRight className="w-4 h-4 text-emerald-500" />
               </button>
             </div>
           </Card>
 
-          {/* Free Rooms & Teachers Right Now */}
-          <Card>
-            <CardHeader
-              title="Свободные ресурсы прямо сейчас"
-              subtitle="Готовы для проведения уроков и консультаций"
-            />
-
-            <div className="space-y-4">
+          <Card className="!bg-blue-600 !border-blue-600 text-white">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-                  Свободные кабинеты ({freeRooms.length})
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {freeRooms.map(r => (
-                    <span
-                      key={r.id}
-                      className="px-2.5 py-1 text-xs font-medium rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40"
-                    >
-                      Каб. {r.number} ({r.capacity} мест)
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-                  Свободные учителя ({freeTeachers.length})
-                </span>
-                <div className="space-y-1.5">
-                  {freeTeachers.map(t => (
-                    <div
-                      key={t.id}
-                      className="text-xs flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50"
-                    >
-                      <span className="font-medium text-slate-800 dark:text-slate-200">{t.fullName}</span>
-                      <span className="text-slate-400">{t.subjectName}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Recent Announcements */}
-          <Card>
-            <CardHeader
-              title="Последние объявления"
-              action={
-                <button
-                  onClick={() => setActiveView('announcements')}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-                >
-                  Все &rarr;
+                <div className="text-xs font-bold text-blue-100 uppercase tracking-wider">AI-помощник</div>
+                <h3 className="mt-2 text-lg font-bold">Собрать расписание без конфликтов</h3>
+                <p className="text-xs text-blue-100/75 mt-2 leading-relaxed">Учтём смены, кабинеты, нагрузку и доступность учителей.</p>
+                <button onClick={() => setActiveView('scheduleWizard')} className="mt-4 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white text-blue-700 text-xs font-bold">
+                  <Sparkles className="w-4 h-4" /> Запустить генератор
                 </button>
-              }
-            />
-
-            <div className="space-y-3">
-              {announcements.slice(0, 2).map(ann => (
-                <div
-                  key={ann.id}
-                  onClick={() => setActiveView('announcements')}
-                  className="p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 cursor-pointer hover:bg-slate-100/60 transition-colors"
-                >
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 line-clamp-2">
-                    {ann.title}
-                  </p>
-                  <span className="text-[11px] text-slate-400 mt-1 block">
-                    {ann.date} • {ann.authorRole}
-                  </span>
-                </div>
-              ))}
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center shrink-0"><Sparkles className="w-6 h-6" /></div>
             </div>
           </Card>
         </div>
       </div>
 
-      {/* Modal: Create Announcement */}
-      <Modal
-        isOpen={newAnnounceModalOpen}
-        onClose={() => setNewAnnounceModalOpen(false)}
-        title="Новое школьное объявление"
-        subtitle="Будет опубликовано в новостной ленте системы"
-        maxWidth="max-w-lg"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setNewAnnounceModalOpen(false)}>
-              Отмена
-            </Button>
-            <Button
-              onClick={() => {
-                if (announceForm.title) {
-                  addToast({ type: 'success', title: 'Опубликовано', message: 'Объявление успешно создано и разослано' });
-                  setNewAnnounceModalOpen(false);
-                  setAnnounceForm({ title: '', target: 'all', content: '' });
-                }
-              }}
-            >
-              Опубликовать
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <Input
-            label="Заголовок объявления"
-            placeholder="Например: График каникул или родительское собрание"
-            value={announceForm.title}
-            onChange={(e) => setAnnounceForm({ ...announceForm, title: e.target.value })}
-            required
-          />
-          <Select
-            label="Целевая аудитория"
-            value={announceForm.target}
-            onChange={(e) => setAnnounceForm({ ...announceForm, target: e.target.value })}
-          >
-            <option value="all">Все (Учителя, ученики, родители)</option>
-            <option value="teachers">Только учителя</option>
-            <option value="parents">Только родители</option>
-            <option value="students">Только учащиеся</option>
-          </Select>
-          <Textarea
-            label="Текст объявления"
-            rows={4}
-            placeholder="Подробный текст сообщения..."
-            value={announceForm.content}
-            onChange={(e) => setAnnounceForm({ ...announceForm, content: e.target.value })}
-          />
-        </div>
-      </Modal>
-
-      {/* Modal: Quick Substitution */}
-      <Modal
-        isOpen={newSubstModalOpen}
-        onClose={() => setNewSubstModalOpen(false)}
-        title="Оформление быстрой замены"
-        subtitle="Автоматический поиск свободных учителей и кабинетов"
-        maxWidth="max-w-lg"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setNewSubstModalOpen(false)}>
-              Отмена
-            </Button>
-            <Button
-              onClick={() => {
-                addToast({ type: 'success', title: 'Замена оформлена', message: 'Уведомление отправлено учителю' });
-                setNewSubstModalOpen(false);
-              }}
-            >
-              Подтвердить замену
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader title="Свободные ресурсы" subtitle="Доступны до конца текущего урока" />
           <div className="grid grid-cols-2 gap-3">
-            <Select label="Класс">
-              {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </Select>
-            <Select label="Номер урока">
-              <option value="1">1-й урок (08:00 - 08:45)</option>
-              <option value="2">2-й урок (08:50 - 09:35)</option>
-              <option value="3">3-й урок (09:45 - 10:30)</option>
-              <option value="4">4-й урок (10:45 - 11:30)</option>
-            </Select>
+            <button onClick={() => setActiveView('teachers')} className="p-4 rounded-2xl bg-[#f4f7fb] dark:bg-white/5 text-left">
+              <GraduationCap className="w-5 h-5 text-blue-600" />
+              <div className="mt-3 text-2xl font-extrabold text-[#14213d] dark:text-white">{freeTeachers.length}</div>
+              <div className="text-xs text-slate-500">свободных учителей</div>
+            </button>
+            <button onClick={() => setActiveView('classrooms')} className="p-4 rounded-2xl bg-[#f4f7fb] dark:bg-white/5 text-left">
+              <DoorOpen className="w-5 h-5 text-emerald-600" />
+              <div className="mt-3 text-2xl font-extrabold text-[#14213d] dark:text-white">{freeRooms.length}</div>
+              <div className="text-xs text-slate-500">свободных кабинетов</div>
+            </button>
           </div>
+        </Card>
 
-          <Select label="Кого заменяем (Основной учитель)">
-            {teachers.map(t => <option key={t.id} value={t.id}>{t.fullName} ({t.subjectName})</option>)}
-          </Select>
+        <Card>
+          <CardHeader title="Ближайшие замены" subtitle="Сегодня и завтра" action={<button onClick={() => setActiveView('substitutions')} className="text-xs font-bold text-blue-600">Все</button>} />
+          <div className="space-y-3">
+            {substitutions.slice(0, 2).map(item => (
+              <div key={item.id} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-700 font-extrabold text-xs flex items-center justify-center">{item.className}</div>
+                <div className="flex-1 min-w-0"><div className="text-sm font-bold text-slate-800 dark:text-white truncate">{item.subject}</div><div className="text-[11px] text-slate-400 truncate">{item.replacementTeacher} · {item.lessonNumber}-й урок</div></div>
+                <Badge variant={item.status === 'confirmed' ? 'success' : 'warning'} size="sm">{item.status === 'confirmed' ? 'Готово' : 'Ждёт'}</Badge>
+              </div>
+            ))}
+          </div>
+        </Card>
 
-          <Select label="Заменяющий преподаватель (Свободен на этом уроке)">
-            {freeTeachers.map(t => <option key={t.id} value={t.id}>✓ {t.fullName} ({t.subjectName})</option>)}
-          </Select>
+        <Card>
+          <CardHeader title="Новости школы" subtitle="Последние объявления" action={<button onClick={() => setActiveView('announcements')} className="text-xs font-bold text-blue-600">Открыть</button>} />
+          <div className="space-y-3">
+            {announcements.slice(0, 2).map(item => (
+              <button key={item.id} onClick={() => setActiveView('announcements')} className="w-full text-left flex gap-3 group">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><Megaphone className="w-4 h-4" /></div>
+                <div className="min-w-0"><div className="text-sm font-bold text-slate-800 dark:text-white truncate group-hover:text-blue-600">{item.title}</div><div className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{item.content}</div></div>
+              </button>
+            ))}
+          </div>
+        </Card>
+      </div>
 
-          <Input label="Причина замены" placeholder="Больничный, конференция, командировка..." />
-        </div>
-      </Modal>
+      <div className="text-center text-[11px] text-slate-400 pb-2">
+        {backendConnected ? 'Данные синхронизированы с сервером' : 'Показаны демонстрационные данные'} · Последнее обновление сейчас
+      </div>
     </div>
   );
 };
