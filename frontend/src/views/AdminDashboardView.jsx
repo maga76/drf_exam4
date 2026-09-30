@@ -34,6 +34,8 @@ export const AdminDashboardView = () => {
     liveLessons,
     substitutions,
     announcements,
+    dashboardStats,
+    backendConnected,
     setActiveView,
     addToast
   } = useApp();
@@ -60,6 +62,9 @@ export const AdminDashboardView = () => {
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Среда, 30 сентября 2026 г. • 1-я смена • {currentSchool.name}
+          </p>
+          <p className={`text-xs mt-1 ${backendConnected ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {backendConnected ? 'Backend connected' : 'Demo data'}
           </p>
         </div>
 
@@ -95,7 +100,7 @@ export const AdminDashboardView = () => {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatsCard
           title="Всего учителей"
-          value={teachers.length}
+          value={dashboardStats?.teachers ?? teachers.length}
           subtitle="В штате школы"
           icon={GraduationCap}
           trend={{ value: "+2", isPositive: true }}
@@ -104,7 +109,7 @@ export const AdminDashboardView = () => {
         />
         <StatsCard
           title="Классов"
-          value={classes.length}
+          value={dashboardStats?.grades ?? classes.length}
           subtitle="1–11 классы"
           icon={Users}
           color="teal"
@@ -112,7 +117,7 @@ export const AdminDashboardView = () => {
         />
         <StatsCard
           title="Уроков сегодня"
-          value="184"
+          value={dashboardStats?.lessons ?? 184}
           subtitle="Идут по графику"
           icon={CalendarDays}
           color="violet"
@@ -120,7 +125,7 @@ export const AdminDashboardView = () => {
         />
         <StatsCard
           title="Отсутствуют"
-          value={absentTeachers.length}
+          value={dashboardStats?.absent_teachers ?? absentTeachers.length}
           subtitle="Учителей на больничном"
           icon={UserX}
           color="rose"

@@ -43,6 +43,7 @@ export const Topbar = () => {
     setSearchModalOpen,
     setMobileMenuOpen,
     setActiveView,
+    logoutUser,
     t
   } = useApp();
 
@@ -303,7 +304,7 @@ export const Topbar = () => {
             {t('nav.settings')}
           </DropdownItem>
           <DropdownDivider />
-          <DropdownItem icon={LogOut} danger onClick={() => setActiveView('auth')}>
+          <DropdownItem icon={LogOut} danger onClick={logoutUser}>
             {t('nav.logout')}
           </DropdownItem>
         </Dropdown>

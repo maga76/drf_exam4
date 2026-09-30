@@ -23,11 +23,12 @@ export const AuthView = () => {
     setCurrentSchool,
     setActiveView,
     switchRole,
+    loginUser,
     addToast
   } = useApp();
 
-  const [username, setUsername] = useState('admin.school12@smartschool.tj');
-  const [password, setPassword] = useState('password123');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin123');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
@@ -38,24 +39,23 @@ export const AuthView = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e?.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      await loginUser(username, password);
+      addToast({
+        type: 'success',
+        title: 'Успешная авторизация',
+        message: 'Добро пожаловать в систему Smart School!'
+      });
+    } catch (loginError) {
+      setError(loginError.message || 'Не удалось подключиться к серверу.');
+    } finally {
       setLoading(false);
-      if (password === 'error') {
-        setError('Неверный логин или пароль. Проверьте правильность введённых данных.');
-      } else {
-        addToast({
-          type: 'success',
-          title: 'Успешная авторизация',
-          message: `Добро пожаловать в систему «Smart School»!`
-        });
-        setActiveView('dashboard');
-      }
-    }, 600);
+    }
   };
 
   const handleQuickLogin = (roleKey, userLogin) => {

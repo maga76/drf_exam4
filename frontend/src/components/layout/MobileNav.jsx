@@ -33,7 +33,8 @@ export const MobileNav = () => {
     setMobileMenuOpen,
     role,
     t,
-    currentSchool
+    currentSchool,
+    logoutUser
   } = useApp();
 
   const bottomNavItems = [
@@ -163,7 +164,7 @@ export const MobileNav = () => {
             <div className="p-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 onClick={() => {
-                  setActiveView('auth');
+                  logoutUser();
                   setMobileMenuOpen(false);
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl"

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations } from '../data/translations';
+import { api } from '../services/api';
 import {
   initialSchools,
   initialAcademicYears,
@@ -41,7 +42,7 @@ export const AppProvider = ({ children }) => {
   const [shiftsConfig, setShiftsConfig] = useState(initialShiftsConfig);
 
   // App Navigation & Modals
-  const [activeView, setActiveView] = useState('dashboard');
+  const [activeView, setActiveView] = useState(api.hasToken() ? 'dashboard' : 'auth');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -49,6 +50,9 @@ export const AppProvider = ({ children }) => {
   // Notifications & Toasts
   const [notifications, setNotifications] = useState(initialNotifications);
   const [toasts, setToasts] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [backendConnected, setBackendConnected] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
 
   // Data Collections
   const [teachers, setTeachers] = useState(initialTeachers);
@@ -83,6 +87,101 @@ export const AppProvider = ({ children }) => {
       document.documentElement.classList.remove('dark');
     }
   }, [theme]);
+
+  const backendRoleToFrontendRole = (backendRole) => {
+    const roles = {
+      school_admin: 'admin',
+      deputy: 'curriculum_director',
+      class_teacher: 'homeroom_teacher'
+    };
+
+    return roles[backendRole] || backendRole;
+  };
+
+  const loadBackendData = async () => {
+    setLoadingData(true);
+
+    try {
+      const [profile, dashboard, apiNotifications] = await Promise.all([
+        api.get('/auth/me/'),
+        api.get('/dashboard/'),
+        api.get('/notifications/')
+      ]);
+
+      const userRole = backendRoleToFrontendRole(profile.role);
+      setRole(userRole);
+      setCurrentUser(prev => ({
+        ...prev,
+        name: `${profile.last_name} ${profile.first_name} ${profile.middle_name}`.trim() || profile.username,
+        email: profile.email,
+        phone: profile.phone,
+        avatar: profile.photo || prev.avatar,
+        roleTitle: translations.ru.roles[userRole] || userRole
+      }));
+      setDashboardStats(dashboard);
+      setNotifications(apiNotifications.map(item => ({
+        id: item.id,
+        type: item.notification_type,
+        title: item.title,
+        message: item.message,
+        read: item.is_read,
+        timestamp: new Date(item.created_at).toLocaleString('ru-RU')
+      })));
+      setBackendConnected(true);
+    } catch (error) {
+      setBackendConnected(false);
+      throw error;
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const loginUser = async (username, password) => {
+    await api.login(username, password);
+    await loadBackendData();
+    setActiveView('dashboard');
+  };
+
+  const logoutUser = async () => {
+    await api.logout();
+    setBackendConnected(false);
+    setDashboardStats(null);
+    setActiveView('auth');
+  };
+
+  useEffect(() => {
+    if (!api.hasToken()) {
+      return;
+    }
+
+    loadBackendData().catch(() => {
+      api.logout();
+      setActiveView('auth');
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!api.hasToken()) {
+      return undefined;
+    }
+
+    const websocketUrl = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000/ws/notifications/';
+    const socket = new WebSocket(websocketUrl);
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      setNotifications(prev => [{
+        id: Date.now(),
+        type: data.type,
+        title: data.title || 'Schedule updated',
+        message: data.message || 'School information was updated',
+        read: false,
+        timestamp: new Date().toLocaleString('ru-RU')
+      }, ...prev]);
+    };
+
+    return () => socket.close();
+  }, [backendConnected]);
 
   // Update profile name when role changes for demo clarity
   const switchRole = (newRole) => {
@@ -189,6 +288,11 @@ export const AppProvider = ({ children }) => {
       setSearchModalOpen,
       notifications,
       setNotifications,
+      dashboardStats,
+      backendConnected,
+      loadingData,
+      loginUser,
+      logoutUser,
       markAllNotificationsRead,
       unreadNotificationsCount,
       toasts,

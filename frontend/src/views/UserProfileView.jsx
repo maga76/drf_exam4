@@ -25,7 +25,7 @@ export const UserProfileView = () => {
     setLanguage,
     theme,
     toggleTheme,
-    setActiveView,
+    logoutUser,
     addToast
   } = useApp();
 
@@ -105,7 +105,7 @@ export const UserProfileView = () => {
             size="sm"
             className="text-rose-600 hover:bg-rose-50"
             icon={LogOut}
-            onClick={() => setActiveView('auth')}
+            onClick={logoutUser}
           >
             Выйти
           </Button>
