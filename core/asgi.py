@@ -5,8 +5,11 @@ from channels.auth import AuthMiddlewareStack
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
+django_application = get_asgi_application()
+
+from school.routing import websocket_urlpatterns
+
 application = ProtocolTypeRouter({
-    'http': get_asgi_application(),
-    # WebSocket будет добавлен позже
-    # 'websocket': AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+    'http': django_application,
+    'websocket': AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
 })

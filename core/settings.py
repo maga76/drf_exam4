@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'channels',
 
     # Наше приложение
-    'school',
+    'school.apps.SchoolConfig',
 ]
 
 MIDDLEWARE = [
