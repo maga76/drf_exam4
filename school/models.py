@@ -98,8 +98,14 @@ class User(AbstractUser):
     photo = models.ImageField(upload_to='users/photos/', blank=True, null=True)
     school = models.ForeignKey('School', on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
 
+    @property
+    def full_name(self):
+        parts = [self.last_name, self.first_name, self.middle_name]
+        name = ' '.join([p for p in parts if p]).strip()
+        return name if name else self.username
+
     def __str__(self):
-        return self.last_name + ' ' + self.first_name
+        return self.full_name
 
 
 class School(models.Model):
