@@ -1,53 +1,72 @@
-# Smart School Backend
+# Smart School (Django REST Framework + React)
 
-Simple school management backend made with Django REST Framework.
+Полнофункциональная цифровая система управления школой (Smart School), включающая надежный серверный API на Django REST Framework и современный, выразительный веб-интерфейс на React (Vite + Tailwind CSS).
 
-## Main features
+## 🌟 Основные возможности
 
-- JWT login and logout
-- Schools, teachers, students, grades, subjects and rooms
-- School schedule and lesson replacements
-- Attendance, marks and homework
-- Announcements and notifications
-- Simple automatic schedule generator
-- WebSocket notifications
-- Celery background tasks
+- **Аутентификация и безопасность:** JWT авторизация (SimpleJWT) с возвратом расширенного профиля пользователя и ролевым разграничением прав (RBAC: Super Admin, School Admin, Deputy, Teacher, Class Teacher, Student, Parent).
+- **Изоляция школ (Multi-tenancy):** Полная изоляция данных — каждый пользователь взаимодействует только с объектами своей школы.
+- **Управление структурой школы:** Школы, корпуса, кабинеты, учебные годы, смены, предметы и классы.
+- **Учителя и ученики:** Профили, распределение нагрузки, учет доступности, поиск преподавателей.
+- **Расписание и замены:** Генерация и ведение расписания уроков, онлайн-монитор «Школа сейчас» (Live Lessons), модуль оформления замен преподавателей и кабинетов.
+- **Учебный процесс:** Электронный журнал оценок, отметки посещаемости, домашние задания.
+- **Коммуникация:** Общешкольные и внутриклассные объявления, система персональных уведомлений.
 
-## Run
+---
+
+## 🚀 Запуск бэкенда (Django API)
 
 ```bash
+# 1. Активация виртуального окружения
 source .venv/bin/activate
+
+# 2. Установка зависимостей (при необходимости)
 pip install -r requirements.txt
+
+# 3. Применение миграций
 python manage.py migrate
-python manage.py createsuperuser
+
+# 4. Запуск автоматических тестов
+python manage.py test
+
+# 5. Запуск сервера разработки
 python manage.py runserver
 ```
 
-PostgreSQL must have a database named `smart_school`.
+> **Примечание по базе данных:** По умолчанию система автоматически использует встроенную базу SQLite (`test.sqlite3`). Для подключения к PostgreSQL установите переменную окружения `USE_POSTGRES=True` (или настройте `.env`).
 
-Redis is needed for Celery and WebSocket:
+---
 
-```bash
-redis-server
-celery -A core worker --loglevel=info
-```
-
-## Tests
+## 💻 Запуск фронтенда (React + Vite)
 
 ```bash
-python manage.py test --settings=core.test_settings
+cd frontend
+
+# 1. Установка зависимостей (при необходимости)
+npm install
+
+# 2. Запуск в режиме разработки
+npm run dev
+
+# 3. Сборка для продакшена
+npm run build
 ```
 
-## Main API
+---
 
-- `POST /api/auth/login/`
-- `POST /api/auth/refresh/`
-- `POST /api/auth/logout/`
-- `GET /api/auth/me/`
-- `GET /api/teachers/search/?q=Ali`
-- `GET /api/teachers/free/`
-- `GET /api/rooms/free/`
-- `POST /api/schedules/generate/`
-- `GET /api/schedules/live/`
-- `GET /api/dashboard/`
-- `WS /ws/notifications/`
+## 📑 Основные эндпоинты API
+
+- `POST /api/auth/login/` — Вход и получение JWT-токенов с профилем пользователя
+- `POST /api/auth/refresh/` — Обновление access-токена
+- `POST /api/auth/logout/` — Выход с добавлением refresh-токена в blacklist
+- `GET /api/auth/me/` — Профиль текущего пользователя
+- `GET /api/dashboard/` — Сводная статистика по школе в реальном времени
+- `GET /api/teachers/search/?q=...` — Поиск учителей по ФИО и предметам
+- `GET /api/teachers/free/` — Свободные преподаватели на текущий момент
+- `GET /api/rooms/free/` — Свободные кабинеты на текущий урок
+- `GET /api/schedules/live/` — Прямой эфир текущих уроков школы
+- `POST /api/lessons/{id}/replace/` — Оформление замены урока
+- `GET /api/attendance/stats/` — Статистика посещаемости по классам и датам
+- `GET /api/notifications/` — Персональные уведомления пользователя
+
+Полная спецификация OpenAPI 3.0 доступна в файле [`swagger.yaml`](./swagger.yaml).
