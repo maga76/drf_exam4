@@ -9,3 +9,7 @@ media/
 .vscode/
 frontend/node_modules/
 frontend/dist/
+.codex-finalizer/
+.codex-pptx-build/
+oop_presentation_output/
+
