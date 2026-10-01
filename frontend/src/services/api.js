@@ -60,7 +60,11 @@ const request = async (path, options = {}) => {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.error || 'Server request failed');
+    const firstFieldError = Object.entries(errorData).find(([, value]) => Array.isArray(value));
+    const message = firstFieldError
+      ? `${firstFieldError[0]}: ${firstFieldError[1][0]}`
+      : errorData.detail || errorData.error || 'Server request failed';
+    throw new Error(message);
   }
 
   if (response.status === 204) {

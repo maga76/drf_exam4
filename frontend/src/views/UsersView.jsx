@@ -19,9 +19,10 @@ import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { Input, Select, SearchInput } from '../components/ui/Input';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { api } from '../services/api';
 
 export const UsersView = () => {
-  const { users, setUsers, permissionsMatrix, addToast } = useApp();
+  const { users, setUsers, schools, currentSchool, permissionsMatrix, addToast } = useApp();
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -32,8 +33,10 @@ export const UsersView = () => {
   const [form, setForm] = useState({
     fullName: '',
     username: '',
+    password: '',
     role: 'teacher',
-    school: 'СОШ №12 им. А. Рудаки',
+    schoolId: currentSchool.id,
+    school: currentSchool.name,
     phone: '',
     status: 'active'
   });
@@ -66,8 +69,10 @@ export const UsersView = () => {
     setForm({
       fullName: '',
       username: '',
+      password: '',
       role: 'teacher',
-      school: 'СОШ №12 им. А. Рудаки',
+      schoolId: currentSchool.id,
+      school: currentSchool.name,
       phone: '+992 ',
       status: 'active'
     });
@@ -76,46 +81,85 @@ export const UsersView = () => {
 
   const handleOpenEdit = (u) => {
     setEditingUser(u);
-    setForm({ ...u });
+    setForm({ ...u, password: '' });
     setCreateModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (!form.fullName || !form.username) return;
+  const roleToBackend = {
+    admin: 'school_admin',
+    curriculum_director: 'deputy',
+    homeroom_teacher: 'class_teacher'
+  };
 
-    if (editingUser) {
-      setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...form } : u));
-      addToast({ type: 'success', title: 'Пользователь обновлён', message: 'Данные учётной записи изменены' });
-    } else {
-      const newUser = {
-        id: 'usr-' + Date.now(),
+  const handleSave = async () => {
+    if (!form.fullName || !form.username || (!editingUser && !form.password)) return;
+
+    const nameParts = form.fullName.trim().split(/\s+/);
+    const selectedSchool = schools.find(item => String(item.id) === String(form.schoolId));
+    const payload = {
+      username: form.username,
+      email: form.username.includes('@') ? form.username : '',
+      last_name: nameParts[0] || '',
+      first_name: nameParts[1] || '',
+      middle_name: nameParts.slice(2).join(' '),
+      phone: form.phone,
+      role: roleToBackend[form.role] || form.role,
+      school: form.role === 'super_admin' ? null : Number(form.schoolId),
+      is_active: form.status === 'active'
+    };
+
+    if (form.password) payload.password = form.password;
+
+    try {
+      const savedUser = editingUser
+        ? await api.patch(`/users/${editingUser.id}/`, payload)
+        : await api.post('/users/', payload);
+      const user = {
         ...form,
-        lastLogin: 'Никогда'
+        id: savedUser.id,
+        schoolId: savedUser.school,
+        school: savedUser.school_name || selectedSchool?.name || 'Все школы',
+        password: '',
+        lastLogin: editingUser?.lastLogin || 'Никогда'
       };
-      setUsers(prev => [newUser, ...prev]);
-      addToast({ type: 'success', title: 'Пользователь создан', message: 'Новая учётная запись успешно зарегистрирована' });
+
+      if (editingUser) {
+        setUsers(prev => prev.map(item => item.id === editingUser.id ? user : item));
+        addToast({ type: 'success', title: 'Доступ обновлён', message: 'Роль и данные пользователя сохранены' });
+      } else {
+        setUsers(prev => [user, ...prev]);
+        addToast({ type: 'success', title: 'Доступ создан', message: `${form.username} теперь может войти в систему` });
+      }
+      setCreateModalOpen(false);
+    } catch (error) {
+      addToast({ type: 'error', title: 'Не удалось создать доступ', message: error.message });
     }
-    setCreateModalOpen(false);
   };
 
   const handleResetPassword = (user) => {
+    handleOpenEdit(user);
     addToast({
       type: 'info',
-      title: 'Пароль сброшен',
-      message: `Временный пароль для ${user.username} отправлен на привязанный телефон`
+      title: 'Изменение пароля',
+      message: `Введите новый пароль для ${user.username} и сохраните`
     });
   };
 
-  const handleToggleBlock = () => {
+  const handleToggleBlock = async () => {
     if (userToBlock) {
       const newStatus = userToBlock.status === 'blocked' ? 'active' : 'blocked';
-      setUsers(prev => prev.map(u => u.id === userToBlock.id ? { ...u, status: newStatus } : u));
-      addToast({
-        type: newStatus === 'blocked' ? 'warning' : 'success',
-        title: newStatus === 'blocked' ? 'Пользователь заблокирован' : 'Доступ восстановлен',
-        message: `Статус аккаунта ${userToBlock.username} обновлён`
-      });
-      setBlockConfirmOpen(false);
+      try {
+        await api.patch(`/users/${userToBlock.id}/`, { is_active: newStatus === 'active' });
+        setUsers(prev => prev.map(item => item.id === userToBlock.id ? { ...item, status: newStatus } : item));
+        addToast({
+          type: newStatus === 'blocked' ? 'warning' : 'success',
+          title: newStatus === 'blocked' ? 'Пользователь заблокирован' : 'Доступ восстановлен',
+          message: `Статус аккаунта ${userToBlock.username} сохранён`
+        });
+        setBlockConfirmOpen(false);
+      } catch (error) {
+        addToast({ type: 'error', title: 'Ошибка', message: error.message });
+      }
     }
   };
 
@@ -291,13 +335,35 @@ export const UsersView = () => {
             required
           />
 
+          <Input
+            label={editingUser ? 'Новый пароль (если хотите изменить)' : 'Пароль для входа'}
+            type="password"
+            placeholder={editingUser ? 'Оставьте пустым без изменения' : 'Минимум 8 символов'}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required={!editingUser}
+          />
+
+          <Select
+            label="Школа"
+            value={form.schoolId}
+            onChange={(e) => {
+              const selectedSchool = schools.find(item => String(item.id) === e.target.value);
+              setForm({ ...form, schoolId: e.target.value, school: selectedSchool?.name || '' });
+            }}
+            disabled={form.role === 'super_admin'}
+          >
+            {schools.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+          </Select>
+
           <div className="grid grid-cols-2 gap-3">
             <Select
               label="Роль в системе"
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
             >
-              <option value="admin">Администратор школы</option>
+              <option value="super_admin">Супер-администратор</option>
+              <option value="admin">Директор / администратор школы</option>
               <option value="curriculum_director">Завуч</option>
               <option value="teacher">Учитель</option>
               <option value="homeroom_teacher">Классный руководитель</option>

@@ -19,9 +19,10 @@ import { Badge } from '../components/ui/Badge';
 import { Table } from '../components/ui/Table';
 import { Modal } from '../components/ui/Modal';
 import { Input, Select, SearchInput } from '../components/ui/Input';
+import { api } from '../services/api';
 
 export const SchoolsManagementView = () => {
-  const { schools, setSchools, addToast } = useApp();
+  const { schools, setSchools, setCurrentSchool, setActiveView, addToast } = useApp();
 
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -66,32 +67,56 @@ export const SchoolsManagementView = () => {
     setModalOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name) return;
 
-    if (editingSchool) {
-      setSchools(prev => prev.map(s => s.id === editingSchool.id ? { ...s, ...form } : s));
-      addToast({ type: 'success', title: 'Школа обновлена', message: 'Данные организации сохранены' });
-    } else {
-      const newSchool = {
-        id: 'sch-' + Date.now(),
+    const payload = {
+      name: form.name,
+      address: form.address,
+      phone: form.phone,
+      email: form.email,
+      status: form.status
+    };
+
+    try {
+      const savedSchool = editingSchool
+        ? await api.patch(`/schools/${editingSchool.id}/`, payload)
+        : await api.post('/schools/', payload);
+      const school = {
         ...form,
-        createdAt: new Date().toISOString().split('T')[0]
+        id: savedSchool.id,
+        createdAt: savedSchool.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+        studentsCount: editingSchool?.studentsCount || 0,
+        teachersCount: editingSchool?.teachersCount || 0,
+        buildingsCount: editingSchool?.buildingsCount || 0
       };
-      setSchools(prev => [newSchool, ...prev]);
-      addToast({ type: 'success', title: 'Школа добавлена', message: 'Новая школа подключена к SaaS платформе' });
+
+      if (editingSchool) {
+        setSchools(prev => prev.map(item => item.id === editingSchool.id ? school : item));
+        addToast({ type: 'success', title: 'Школа обновлена', message: 'Данные сохранены на сервере' });
+      } else {
+        setSchools(prev => [school, ...prev]);
+        addToast({ type: 'success', title: 'Школа добавлена', message: 'Теперь можно создать директора и сотрудников' });
+      }
+      setModalOpen(false);
+    } catch (error) {
+      addToast({ type: 'error', title: 'Не удалось сохранить', message: error.message });
     }
-    setModalOpen(false);
   };
 
-  const handleToggleStatus = (school) => {
+  const handleToggleStatus = async (school) => {
     const nextStatus = school.status === 'blocked' ? 'active' : 'blocked';
-    setSchools(prev => prev.map(s => s.id === school.id ? { ...s, status: nextStatus } : s));
-    addToast({
-      type: nextStatus === 'blocked' ? 'warning' : 'success',
-      title: nextStatus === 'blocked' ? 'Школа заблокирована' : 'Школа активирована',
-      message: `Статус ${school.name} изменён на ${nextStatus}`
-    });
+    try {
+      await api.patch(`/schools/${school.id}/`, { status: nextStatus });
+      setSchools(prev => prev.map(item => item.id === school.id ? { ...item, status: nextStatus } : item));
+      addToast({
+        type: nextStatus === 'blocked' ? 'warning' : 'success',
+        title: nextStatus === 'blocked' ? 'Школа заблокирована' : 'Школа активирована',
+        message: `Статус ${school.name} сохранён`
+      });
+    } catch (error) {
+      addToast({ type: 'error', title: 'Ошибка', message: error.message });
+    }
   };
 
   const statusBadge = (st) => {
@@ -151,6 +176,17 @@ export const SchoolsManagementView = () => {
       align: 'right',
       render: (_, row) => (
         <div className="flex items-center justify-end gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            title="Добавить пользователей этой школы"
+            onClick={() => {
+              setCurrentSchool(row);
+              setActiveView('users');
+            }}
+          >
+            <Eye className="w-3.5 h-3.5 text-blue-500" />
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => handleOpenEdit(row)}>
             <Edit2 className="w-3.5 h-3.5 text-slate-500" />
           </Button>

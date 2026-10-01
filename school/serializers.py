@@ -4,12 +4,38 @@ from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=False)
+    school_name = serializers.CharField(source='school.name', read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'first_name', 'last_name',
                   'middle_name', 'phone', 'photo', 'role', 'school',
-                  'password']
+                  'school_name', 'is_active', 'password']
+
+    def validate(self, data):
+        request = self.context.get('request')
+
+        if not request or not request.user.is_authenticated:
+            return data
+
+        if request.user.is_superuser or request.user.role == 'super_admin':
+            return data
+
+        data['school'] = request.user.school
+        if data.get('role') == 'super_admin':
+            raise serializers.ValidationError({
+                'role': 'Only a super administrator can create this role.'
+            })
+
+        return data
+
+    def create_role_profile(self, user):
+        if user.role in ['teacher', 'class_teacher']:
+            Teacher.objects.get_or_create(user=user)
+        elif user.role == 'student':
+            Student.objects.get_or_create(user=user)
+        elif user.role == 'parent':
+            Parent.objects.get_or_create(user=user)
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -19,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
 
+        self.create_role_profile(user)
         return user
 
     def update(self, user, validated_data):
@@ -31,14 +58,29 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
 
         user.save()
+        self.create_role_profile(user)
         return user
 
 
 class SchoolSerializer(serializers.ModelSerializer):
+    students_count = serializers.SerializerMethodField()
+    teachers_count = serializers.SerializerMethodField()
+    buildings_count = serializers.SerializerMethodField()
+
     class Meta:
         model = School
         fields = ['id', 'name', 'address', 'phone', 'email', 'logo',
-                  'status', 'created_at']
+                  'status', 'created_at', 'students_count',
+                  'teachers_count', 'buildings_count']
+
+    def get_students_count(self, school):
+        return school.users.filter(role='student').count()
+
+    def get_teachers_count(self, school):
+        return school.users.filter(role__in=['teacher', 'class_teacher']).count()
+
+    def get_buildings_count(self, school):
+        return school.buildings.count()
 
 
 class BuildingSerializer(serializers.ModelSerializer):

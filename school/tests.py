@@ -55,6 +55,69 @@ class SmartSchoolApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
+    def test_super_admin_can_create_school_and_role_accounts(self):
+        school_response = self.client.post('/api/schools/', {
+            'name': 'New School',
+            'address': 'Khujand',
+            'phone': '+992900000000',
+            'email': 'school@example.com',
+            'status': 'active',
+        })
+
+        self.assertEqual(school_response.status_code, status.HTTP_201_CREATED)
+        school_id = school_response.data['id']
+
+        roles = ['school_admin', 'deputy', 'teacher', 'student', 'parent']
+        for role in roles:
+            response = self.client.post('/api/users/', {
+                'username': role,
+                'password': 'password123',
+                'first_name': role,
+                'last_name': 'Test',
+                'role': role,
+                'school': school_id,
+                'is_active': True,
+            })
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        teacher = User.objects.get(username='teacher')
+        student = User.objects.get(username='student')
+        parent = User.objects.get(username='parent')
+
+        self.assertTrue(teacher.check_password('password123'))
+        self.assertTrue(hasattr(teacher, 'teacher_profile'))
+        self.assertTrue(hasattr(student, 'student_profile'))
+        self.assertTrue(hasattr(parent, 'parent_profile'))
+
+    def test_school_admin_sees_only_own_school_users(self):
+        other_school = School.objects.create(name='Other', address='Hisor')
+        User.objects.create_user(
+            username='other_student',
+            password='password123',
+            role='student',
+            school=other_school,
+        )
+        school_admin = User.objects.create_user(
+            username='school_director',
+            password='password123',
+            role='school_admin',
+            school=self.school,
+        )
+        User.objects.create_user(
+            username='own_student',
+            password='password123',
+            role='student',
+            school=self.school,
+        )
+
+        self.client.force_authenticate(school_admin)
+        response = self.client.get('/api/users/')
+        usernames = [item['username'] for item in response.data]
+
+        self.assertIn('own_student', usernames)
+        self.assertNotIn('other_student', usernames)
+        self.assertNotIn('admin', usernames)
+
     def test_schedule_generator(self):
         year = AcademicYear.objects.create(
             school=self.school,

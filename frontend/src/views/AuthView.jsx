@@ -99,7 +99,7 @@ export const AuthView = () => {
             label="Образовательное учреждение"
             value={currentSchool.id}
             onChange={(e) => {
-              const selected = schools.find(s => s.id === e.target.value);
+              const selected = schools.find(s => String(s.id) === e.target.value);
               if (selected) setCurrentSchool(selected);
             }}
           >
@@ -175,6 +175,18 @@ export const AuthView = () => {
             Войти в систему
           </Button>
         </form>
+
+        <button
+          type="button"
+          onClick={() => {
+            setUsername('admin');
+            setPassword('admin123');
+          }}
+          className="mt-4 w-full p-3 rounded-2xl bg-violet-50 border border-violet-100 text-left hover:bg-violet-100 transition-colors"
+        >
+          <span className="block text-xs font-bold text-violet-800">Вход супер-администратора</span>
+          <span className="block text-[11px] text-violet-600 mt-1">Логин: admin · Пароль: admin123</span>
+        </button>
 
         {/* Quick Demo Switcher Section */}
         <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">

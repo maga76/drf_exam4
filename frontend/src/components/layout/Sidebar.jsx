@@ -19,7 +19,8 @@ import {
   ShieldCheck,
   CalendarRange,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Building2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -58,6 +59,7 @@ export const Sidebar = () => {
     {
       title: 'Управление',
       items: [
+        { id: 'schoolManagement', label: 'Управление школами', icon: Building2, roles: ['super_admin'] },
         { id: 'classrooms', label: 'Кабинеты', icon: DoorOpen },
         { id: 'subjects', label: 'Предметы', icon: LibraryBig, roles: ['super_admin', 'admin', 'curriculum_director'] },
         { id: 'announcements', label: 'Объявления', icon: Megaphone },

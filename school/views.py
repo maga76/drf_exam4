@@ -34,15 +34,34 @@ class MeView(generics.RetrieveAPIView):
 
 
 class UserListCreateView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSchoolAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = User.objects.select_related('school').all().order_by('-date_joined')
+
+        if user.is_superuser or user.role == 'super_admin':
+            school_id = self.request.query_params.get('school')
+            if school_id:
+                queryset = queryset.filter(school_id=school_id)
+            return queryset
+
+        return queryset.filter(school=user.school).exclude(role='super_admin')
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSchoolAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = User.objects.select_related('school').all()
+
+        if user.is_superuser or user.role == 'super_admin':
+            return queryset
+
+        return queryset.filter(school=user.school).exclude(role='super_admin')
 
 
 class SchoolListCreateView(generics.ListCreateAPIView):

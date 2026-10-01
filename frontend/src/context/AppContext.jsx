@@ -98,6 +98,33 @@ export const AppProvider = ({ children }) => {
     return roles[backendRole] || backendRole;
   };
 
+  const mapSchoolFromApi = (school) => ({
+    id: school.id,
+    name: school.name,
+    address: school.address,
+    phone: school.phone,
+    email: school.email,
+    status: school.status,
+    type: 'Общеобразовательная школа',
+    studentsCount: school.students_count || 0,
+    teachersCount: school.teachers_count || 0,
+    buildingsCount: school.buildings_count || 0,
+    createdAt: school.created_at?.slice(0, 10) || '—'
+  });
+
+  const mapUserFromApi = (user) => ({
+    id: user.id,
+    fullName: [user.last_name, user.first_name, user.middle_name].filter(Boolean).join(' ') || user.username,
+    username: user.username,
+    email: user.email,
+    role: backendRoleToFrontendRole(user.role),
+    schoolId: user.school,
+    school: user.school_name || 'Все школы',
+    phone: user.phone,
+    status: user.is_active ? 'active' : 'blocked',
+    lastLogin: '—'
+  });
+
   const loadBackendData = async () => {
     setLoadingData(true);
 
@@ -118,6 +145,26 @@ export const AppProvider = ({ children }) => {
         avatar: profile.photo || prev.avatar,
         roleTitle: translations.ru.roles[userRole] || userRole
       }));
+
+      if (userRole === 'super_admin') {
+        const apiSchools = await api.get('/schools/');
+        const mappedSchools = apiSchools.map(mapSchoolFromApi);
+        setSchools(mappedSchools);
+        if (mappedSchools.length) {
+          setCurrentSchool(mappedSchools[0]);
+        }
+      } else if (profile.school) {
+        setCurrentSchool(prev => ({
+          ...prev,
+          id: profile.school,
+          name: profile.school_name || prev.name
+        }));
+      }
+
+      if (['super_admin', 'admin'].includes(userRole)) {
+        const apiUsers = await api.get('/users/');
+        setUsers(apiUsers.map(mapUserFromApi));
+      }
       setDashboardStats(dashboard);
       setNotifications(apiNotifications.map(item => ({
         id: item.id,
