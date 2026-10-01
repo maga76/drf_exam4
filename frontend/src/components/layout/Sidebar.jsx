@@ -20,7 +20,8 @@ import {
   CalendarRange,
   PanelLeftClose,
   PanelLeftOpen,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -74,30 +75,35 @@ export const Sidebar = () => {
   const isVisible = (item) => !item.roles || item.roles.includes(role);
 
   return (
-    <aside className={`hidden md:flex h-screen sticky top-0 flex-col bg-[#0b1739] text-white transition-all duration-300 shrink-0 ${sidebarCollapsed ? 'w-[84px]' : 'w-[264px]'}`}>
+    <aside className={`hidden md:flex h-screen sticky top-0 flex-col bg-gradient-to-b from-[#091129] via-[#0b1739] to-[#070e24] text-white transition-all duration-300 shrink-0 border-r border-white/10 ${sidebarCollapsed ? 'w-[84px]' : 'w-[268px]'}`}>
+      {/* Brand Header */}
       <div className="h-[76px] flex items-center px-5 border-b border-white/10">
         <button
           onClick={() => setActiveView('dashboard')}
-          className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? 'mx-auto' : ''}`}
+          className={`flex items-center gap-3.5 min-w-0 ${sidebarCollapsed ? 'mx-auto' : ''}`}
         >
-          <div className="w-10 h-10 rounded-[14px] bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-950/30 relative shrink-0">
-            <School className="w-5 h-5" />
-            <span className="absolute -right-1 -top-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#0b1739]" />
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 relative shrink-0">
+            <School className="w-5 h-5 text-white" />
+            <span className="absolute -right-1 -top-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-[#091129] shadow-sm shadow-amber-400/50" />
           </div>
           {!sidebarCollapsed && (
             <div className="text-left min-w-0">
-              <div className="font-bold text-[17px] tracking-tight">Smart School</div>
-              <div className="text-[11px] text-blue-200/70 truncate">{currentSchool.name}</div>
+              <div className="font-black text-[18px] tracking-tight text-white flex items-center gap-1.5">
+                Smart School
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/30 text-indigo-300 border border-indigo-500/30">PRO</span>
+              </div>
+              <div className="text-[11px] font-medium text-blue-200/70 truncate">{currentSchool.name}</div>
             </div>
           )}
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 py-5 space-y-6">
+      {/* Navigation Links */}
+      <div className="flex-1 overflow-y-auto px-3.5 py-5 space-y-6">
         {sections.map(section => (
           <div key={section.title}>
             {!sidebarCollapsed && (
-              <div className="px-3 mb-2 text-[10px] font-bold tracking-[0.16em] uppercase text-blue-200/40">
+              <div className="px-3 mb-2 text-[10px] font-extrabold tracking-[0.18em] uppercase text-blue-200/40">
                 {section.title}
               </div>
             )}
@@ -111,14 +117,24 @@ export const Sidebar = () => {
                     key={item.id}
                     onClick={() => setActiveView(item.id)}
                     title={sidebarCollapsed ? item.label : undefined}
-                    className={`w-full h-10 flex items-center rounded-xl transition-all duration-200 ${sidebarCollapsed ? 'justify-center' : 'px-3 gap-3'} ${active ? 'bg-white text-[#0b1739] shadow-lg shadow-black/10' : 'text-blue-100/70 hover:text-white hover:bg-white/[0.08]'}`}
+                    className={`w-full h-11 flex items-center rounded-xl transition-all duration-200 ${
+                      sidebarCollapsed ? 'justify-center' : 'px-3 gap-3'
+                    } ${
+                      active
+                        ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/25 scale-[1.01]'
+                        : 'text-blue-100/70 hover:text-white hover:bg-white/[0.08] font-medium'
+                    }`}
                   >
-                    <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-blue-600' : ''}`} />
+                    <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-white' : 'text-blue-200/60'}`} />
                     {!sidebarCollapsed && (
                       <>
-                        <span className="flex-1 text-left text-[13px] font-semibold">{item.label}</span>
+                        <span className="flex-1 text-left text-[13px]">{item.label}</span>
                         {item.badge && (
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${item.badge === 'LIVE' ? 'bg-red-500 text-white' : 'bg-amber-400 text-[#0b1739]'}`}>
+                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                            item.badge === 'LIVE'
+                              ? 'bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/50'
+                              : 'bg-amber-400 text-slate-950 shadow-sm shadow-amber-400/30'
+                          }`}>
                             {item.badge}
                           </span>
                         )}
@@ -132,11 +148,12 @@ export const Sidebar = () => {
         ))}
       </div>
 
-      <div className="p-3 border-t border-white/10">
+      {/* Footer */}
+      <div className="p-3 border-t border-white/10 space-y-1">
         {!sidebarCollapsed && (
           <button
-            onClick={() => setActiveView('settings')}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100/70 hover:text-white hover:bg-white/[0.08] text-[13px] font-semibold"
+            onClick={() => setActiveView('schoolSettings')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100/70 hover:text-white hover:bg-white/[0.08] text-[13px] font-semibold transition-colors"
           >
             <Settings className="w-[18px] h-[18px]" />
             Настройки школы
@@ -144,7 +161,7 @@ export const Sidebar = () => {
         )}
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="mt-1 w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-blue-200/50 hover:text-white hover:bg-white/[0.08] text-xs"
+          className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-blue-200/50 hover:text-white hover:bg-white/[0.08] text-xs transition-colors"
         >
           {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
           {!sidebarCollapsed && <span>Свернуть меню</span>}
