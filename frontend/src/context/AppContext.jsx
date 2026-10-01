@@ -207,29 +207,6 @@ export const AppProvider = ({ children }) => {
     });
   }, []);
 
-  useEffect(() => {
-    if (!api.hasToken()) {
-      return undefined;
-    }
-
-    const websocketUrl = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000/ws/notifications/';
-    const socket = new WebSocket(websocketUrl);
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setNotifications(prev => [{
-        id: Date.now(),
-        type: data.type,
-        title: data.title || 'Schedule updated',
-        message: data.message || 'School information was updated',
-        read: false,
-        timestamp: new Date().toLocaleString('ru-RU')
-      }, ...prev]);
-    };
-
-    return () => socket.close();
-  }, [backendConnected]);
-
   // Update profile name when role changes for demo clarity
   const switchRole = (newRole) => {
     setRole(newRole);

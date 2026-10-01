@@ -116,10 +116,23 @@ export const api = {
     });
   },
 
+  put(path, data) {
+    return request(path, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
   patch(path, data) {
     return request(path, {
       method: 'PATCH',
       body: JSON.stringify(data)
+    });
+  },
+
+  delete(path) {
+    return request(path, {
+      method: 'DELETE'
     });
   },
 
