@@ -57,3 +57,32 @@ class IsOwnerOrAdmin(BasePermission):
         if request.user.is_superuser or request.user.role in ['super_admin', 'school_admin']:
             return True
         return obj == request.user or getattr(obj, 'user', None) == request.user
+
+
+class IsSchoolAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
+        return request.user.is_superuser or request.user.role in ['super_admin', 'school_admin']
+
+
+class IsDeputyOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
+        return request.user.is_superuser or request.user.role in ['super_admin', 'school_admin', 'deputy']
+
+
+class IsTeacherOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
+        return request.user.is_superuser or request.user.role in [
+            'super_admin', 'school_admin', 'deputy', 'teacher', 'class_teacher'
+        ]
