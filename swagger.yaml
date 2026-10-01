@@ -1,0 +1,1994 @@
+openapi: 3.0.3
+info:
+  title: Smart School API
+  description: API Smart School (расписание, оценки, посещаемость, уведомления)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api
+    description: Local dev
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Schools
+  - name: Buildings
+  - name: AcademicYears
+  - name: Subjects
+  - name: Rooms
+  - name: Grades
+  - name: Teachers
+  - name: Students
+  - name: Parents
+  - name: TimeSlots
+  - name: Schedules
+  - name: Lessons
+  - name: SubjectHours
+  - name: Replacements
+  - name: Attendance
+  - name: Marks
+  - name: Homework
+  - name: Announcements
+  - name: Notifications
+  - name: Dashboard
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login/:
+    post:
+      tags: [Auth]
+      summary: Получить JWT токены
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Токены получены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access: { type: string }
+                  refresh: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/refresh/:
+    post:
+      tags: [Auth]
+      summary: Обновить access токен
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh]
+              properties:
+                refresh: { type: string }
+      responses:
+        '200':
+          description: Новый access токен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access: { type: string }
+
+  /auth/logout/:
+    post:
+      tags: [Auth]
+      summary: Выйти (blacklist refresh токена)
+      responses:
+        '204': { description: Выход выполнен }
+
+  /auth/me/:
+    get:
+      tags: [Auth]
+      summary: Текущий пользователь
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/:
+    get:
+      tags: [Users]
+      summary: Список пользователей
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  next: { type: string, nullable: true }
+                  previous: { type: string, nullable: true }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+    post:
+      tags: [Users]
+      summary: Создать пользователя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '201': { description: Создан }
+
+  /users/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Users]
+      summary: Получить пользователя
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Users]
+      summary: Полное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Users]
+      summary: Частичное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/User' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Users]
+      summary: Удалить пользователя
+      responses:
+        '204': { description: Удалён }
+
+  /schools/:
+    get:
+      tags: [Schools]
+      summary: Список школ
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/School' }
+    post:
+      tags: [Schools]
+      summary: Создать школу
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/School' }
+      responses:
+        '201': { description: Создана }
+
+  /schools/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Schools]
+      summary: Получить школу
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/School' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Schools]
+      summary: Обновить школу
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/School' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Schools]
+      summary: Частичное обновление школы
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/School' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Schools]
+      summary: Удалить школу
+      responses:
+        '204': { description: Удалена }
+
+  /buildings/:
+    get:
+      tags: [Buildings]
+      summary: Список корпусов
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: school
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Building' }
+    post:
+      tags: [Buildings]
+      summary: Создать корпус
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Building' }
+      responses:
+        '201': { description: Создан }
+
+  /buildings/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Buildings]
+      summary: Получить корпус
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Building' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Buildings]
+      summary: Обновить корпус
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Building' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Buildings]
+      summary: Частичное обновление корпуса
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Building' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Buildings]
+      summary: Удалить корпус
+      responses:
+        '204': { description: Удалён }
+
+  /academic-years/:
+    get:
+      tags: [AcademicYears]
+      summary: Список учебных годов
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/AcademicYear' }
+    post:
+      tags: [AcademicYears]
+      summary: Создать учебный год
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcademicYear' }
+      responses:
+        '201': { description: Создан }
+
+  /academic-years/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [AcademicYears]
+      summary: Получить учебный год
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AcademicYear' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [AcademicYears]
+      summary: Обновить учебный год
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcademicYear' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [AcademicYears]
+      summary: Частичное обновление учебного года
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcademicYear' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [AcademicYears]
+      summary: Удалить учебный год
+      responses:
+        '204': { description: Удалён }
+
+  /subjects/:
+    get:
+      tags: [Subjects]
+      summary: Список предметов
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/search'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Subject' }
+    post:
+      tags: [Subjects]
+      summary: Создать предмет
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Subject' }
+      responses:
+        '201': { description: Создан }
+
+  /subjects/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Subjects]
+      summary: Получить предмет
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subject' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Subjects]
+      summary: Обновить предмет
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Subject' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Subjects]
+      summary: Частичное обновление предмета
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Subject' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Subjects]
+      summary: Удалить предмет
+      responses:
+        '204': { description: Удалён }
+
+  /rooms/:
+    get:
+      tags: [Rooms]
+      summary: Список кабинетов
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: building
+          in: query
+          schema: { type: integer }
+        - name: room_type
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Room' }
+    post:
+      tags: [Rooms]
+      summary: Создать кабинет
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Room' }
+      responses:
+        '201': { description: Создан }
+
+  /rooms/free/:
+    get:
+      tags: [Rooms]
+      summary: Свободные кабинеты
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: time_slot
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Room' }
+
+  /rooms/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Rooms]
+      summary: Получить кабинет
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Room' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Rooms]
+      summary: Обновить кабинет
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Room' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Rooms]
+      summary: Частичное обновление кабинета
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Room' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Rooms]
+      summary: Удалить кабинет
+      responses:
+        '204': { description: Удалён }
+
+  /rooms/{id}/schedule/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: date
+        in: query
+        schema: { type: string, format: date }
+    get:
+      tags: [Rooms]
+      summary: Расписание кабинета
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Schedule' }
+
+  /grades/:
+    get:
+      tags: [Grades]
+      summary: Список классов
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Grade' }
+    post:
+      tags: [Grades]
+      summary: Создать класс
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Grade' }
+      responses:
+        '201': { description: Создан }
+
+  /grades/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Grades]
+      summary: Получить класс
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Grade' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Grades]
+      summary: Обновить класс
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Grade' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Grades]
+      summary: Частичное обновление класса
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Grade' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Grades]
+      summary: Удалить класс
+      responses:
+        '204': { description: Удалён }
+
+  /grades/{id}/schedule/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: date
+        in: query
+        schema: { type: string, format: date }
+    get:
+      tags: [Grades]
+      summary: Расписание класса
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Schedule' }
+
+  /grades/{id}/students/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Grades]
+      summary: Ученики класса
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Student' }
+
+  /teachers/:
+    get:
+      tags: [Teachers]
+      summary: Список учителей
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: subject
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Teacher' }
+    post:
+      tags: [Teachers]
+      summary: Создать учителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Teacher' }
+      responses:
+        '201': { description: Создан }
+
+  /teachers/search/:
+    get:
+      tags: [Teachers]
+      summary: Поиск учителей
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Teacher' }
+
+  /teachers/free/:
+    get:
+      tags: [Teachers]
+      summary: Свободные учителя
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+        - name: time_slot
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Teacher' }
+
+  /teachers/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Teachers]
+      summary: Получить учителя
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Teacher' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Teachers]
+      summary: Обновить учителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Teacher' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Teachers]
+      summary: Частичное обновление учителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Teacher' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Teachers]
+      summary: Удалить учителя
+      responses:
+        '204': { description: Удалён }
+
+  /teachers/{id}/schedule/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+      - name: date
+        in: query
+        schema: { type: string, format: date }
+    get:
+      tags: [Teachers]
+      summary: Расписание учителя
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Schedule' }
+
+  /teachers/{id}/workload/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Teachers]
+      summary: Нагрузка учителя
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teacher_id: { type: integer }
+                  total_lessons: { type: integer }
+                  lessons_by_subject:
+                    type: object
+                    additionalProperties: { type: integer }
+
+  /teacher-availability/:
+    get:
+      tags: [Teachers]
+      summary: Список доступности учителей
+      parameters:
+        - name: teacher
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TeacherAvailability' }
+    post:
+      tags: [Teachers]
+      summary: Создать запись доступности
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeacherAvailability' }
+      responses:
+        '201': { description: Создана }
+
+  /teacher-availability/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Teachers]
+      summary: Получить запись доступности
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TeacherAvailability' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Teachers]
+      summary: Обновить запись доступности
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeacherAvailability' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Teachers]
+      summary: Частичное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeacherAvailability' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Teachers]
+      summary: Удалить запись доступности
+      responses:
+        '204': { description: Удалена }
+
+  /students/:
+    get:
+      tags: [Students]
+      summary: Список учеников
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: grade
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Student' }
+    post:
+      tags: [Students]
+      summary: Создать ученика
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '201': { description: Создан }
+
+  /students/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Students]
+      summary: Получить ученика
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Student' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Students]
+      summary: Обновить ученика
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Students]
+      summary: Частичное обновление ученика
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Student' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Students]
+      summary: Удалить ученика
+      responses:
+        '204': { description: Удалён }
+
+  /parents/:
+    get:
+      tags: [Parents]
+      summary: Список родителей
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Parent' }
+    post:
+      tags: [Parents]
+      summary: Создать родителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Parent' }
+      responses:
+        '201': { description: Создан }
+
+  /parents/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Parents]
+      summary: Получить родителя
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Parent' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Parents]
+      summary: Обновить родителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Parent' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Parents]
+      summary: Частичное обновление родителя
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Parent' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Parents]
+      summary: Удалить родителя
+      responses:
+        '204': { description: Удалён }
+
+  /time-slots/:
+    get:
+      tags: [TimeSlots]
+      summary: Список временных слотов
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/TimeSlot' }
+    post:
+      tags: [TimeSlots]
+      summary: Создать временной слот
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TimeSlot' }
+      responses:
+        '201': { description: Создан }
+
+  /time-slots/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [TimeSlots]
+      summary: Получить временной слот
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeSlot' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [TimeSlots]
+      summary: Обновить временной слот
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TimeSlot' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [TimeSlots]
+      summary: Частичное обновление слота
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TimeSlot' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [TimeSlots]
+      summary: Удалить временной слот
+      responses:
+        '204': { description: Удалён }
+
+  /schedules/:
+    get:
+      tags: [Schedules]
+      summary: Список расписания
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+        - name: grade
+          in: query
+          schema: { type: integer }
+        - name: teacher
+          in: query
+          schema: { type: integer }
+        - name: room
+          in: query
+          schema: { type: integer }
+        - name: weekday
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Schedule' }
+    post:
+      tags: [Schedules]
+      summary: Создать запись расписания
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Schedule' }
+      responses:
+        '201': { description: Создана }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /schedules/live/:
+    get:
+      tags: [Schedules]
+      summary: Идущие сейчас уроки
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Schedule' }
+
+  /schedules/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Schedules]
+      summary: Получить запись расписания
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Schedule' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Schedules]
+      summary: Обновить запись расписания
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Schedule' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Schedules]
+      summary: Частичное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Schedule' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Schedules]
+      summary: Удалить запись расписания
+      responses:
+        '204': { description: Удалена }
+
+  /lessons/:
+    get:
+      tags: [Lessons]
+      summary: Список уроков
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Lesson' }
+    post:
+      tags: [Lessons]
+      summary: Создать урок
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Lesson' }
+      responses:
+        '201': { description: Создан }
+
+  /lessons/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Lessons]
+      summary: Получить урок
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Lesson' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Lessons]
+      summary: Обновить урок
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Lesson' }
+      responses:
+        '200': { description: Обновлён }
+    patch:
+      tags: [Lessons]
+      summary: Частичное обновление урока
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Lesson' }
+      responses:
+        '200': { description: Обновлён }
+    delete:
+      tags: [Lessons]
+      summary: Удалить урок
+      responses:
+        '204': { description: Удалён }
+
+  /lessons/{id}/replace/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    post:
+      tags: [Lessons]
+      summary: Заменить урок (другой учитель/кабинет/время)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teacher: { type: integer, nullable: true }
+                room: { type: integer, nullable: true }
+                date: { type: string, format: date, nullable: true }
+                time_slot: { type: integer, nullable: true }
+                reason: { type: string }
+      responses:
+        '200': { description: Замена выполнена }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /subject-hours/:
+    get:
+      tags: [SubjectHours]
+      summary: Список часов по предметам
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: grade
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/SubjectHours' }
+    post:
+      tags: [SubjectHours]
+      summary: Создать запись часов
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubjectHours' }
+      responses:
+        '201': { description: Создана }
+
+  /subject-hours/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [SubjectHours]
+      summary: Получить запись часов
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SubjectHours' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [SubjectHours]
+      summary: Обновить запись часов
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubjectHours' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [SubjectHours]
+      summary: Частичное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubjectHours' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [SubjectHours]
+      summary: Удалить запись часов
+      responses:
+        '204': { description: Удалена }
+
+  /replacements/:
+    get:
+      tags: [Replacements]
+      summary: Список замен уроков
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/LessonReplacement' }
+    post:
+      tags: [Replacements]
+      summary: Создать замену
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LessonReplacement' }
+      responses:
+        '201': { description: Создана }
+
+  /replacements/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Replacements]
+      summary: Получить замену
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LessonReplacement' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Replacements]
+      summary: Обновить замену
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LessonReplacement' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Replacements]
+      summary: Частичное обновление замены
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LessonReplacement' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Replacements]
+      summary: Удалить замену
+      responses:
+        '204': { description: Удалена }
+
+  /attendance/:
+    get:
+      tags: [Attendance]
+      summary: Список посещаемости
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: student
+          in: query
+          schema: { type: integer }
+        - name: lesson
+          in: query
+          schema: { type: integer }
+        - name: date
+          in: query
+          schema: { type: string, format: date }
+        - name: status
+          in: query
+          schema: { type: string, enum: [present, absent, late, excused] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Attendance' }
+    post:
+      tags: [Attendance]
+      summary: Создать запись посещаемости
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Attendance' }
+      responses:
+        '201': { description: Создана }
+
+  /attendance/stats/:
+    get:
+      tags: [Attendance]
+      summary: Статистика посещаемости
+      parameters:
+        - name: student
+          in: query
+          schema: { type: integer }
+        - name: grade
+          in: query
+          schema: { type: integer }
+        - name: date_from
+          in: query
+          schema: { type: string, format: date }
+        - name: date_to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total: { type: integer }
+                  present: { type: integer }
+                  absent: { type: integer }
+                  late: { type: integer }
+                  excused: { type: integer }
+                  attendance_rate: { type: number, format: float }
+
+  /attendance/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Attendance]
+      summary: Получить запись посещаемости
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Attendance' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Attendance]
+      summary: Обновить запись посещаемости
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Attendance' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Attendance]
+      summary: Частичное обновление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Attendance' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Attendance]
+      summary: Удалить запись посещаемости
+      responses:
+        '204': { description: Удалена }
+
+  /marks/:
+    get:
+      tags: [Marks]
+      summary: Список оценок
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: student
+          in: query
+          schema: { type: integer }
+        - name: subject
+          in: query
+          schema: { type: integer }
+        - name: lesson
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Mark' }
+    post:
+      tags: [Marks]
+      summary: Создать оценку
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Mark' }
+      responses:
+        '201': { description: Создана }
+
+  /marks/student/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Marks]
+      summary: Оценки ученика
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Mark' }
+
+  /marks/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Marks]
+      summary: Получить оценку
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Mark' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Marks]
+      summary: Обновить оценку
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Mark' }
+      responses:
+        '200': { description: Обновлена }
+    patch:
+      tags: [Marks]
+      summary: Частичное обновление оценки
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Mark' }
+      responses:
+        '200': { description: Обновлена }
+    delete:
+      tags: [Marks]
+      summary: Удалить оценку
+      responses:
+        '204': { description: Удалена }
+
+  /homework/:
+    get:
+      tags: [Homework]
+      summary: Список домашних заданий
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: grade
+          in: query
+          schema: { type: integer }
+        - name: subject
+          in: query
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Homework' }
+    post:
+      tags: [Homework]
+      summary: Создать домашнее задание
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Homework' }
+      responses:
+        '201': { description: Создано }
+
+  /homework/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Homework]
+      summary: Получить домашнее задание
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Homework' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Homework]
+      summary: Обновить домашнее задание
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Homework' }
+      responses:
+        '200': { description: Обновлено }
+    patch:
+      tags: [Homework]
+      summary: Частичное обновление ДЗ
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Homework' }
+      responses:
+        '200': { description: Обновлено }
+    delete:
+      tags: [Homework]
+      summary: Удалить домашнее задание
+      responses:
+        '204': { description: Удалено }
+
+  /announcements/:
+    get:
+      tags: [Announcements]
+      summary: Список объявлений
+      parameters:
+        - $ref: '#/components/parameters/page'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Announcement' }
+    post:
+      tags: [Announcements]
+      summary: Создать объявление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Announcement' }
+      responses:
+        '201': { description: Создано }
+
+  /announcements/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Announcements]
+      summary: Получить объявление
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Announcement' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Announcements]
+      summary: Обновить объявление
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Announcement' }
+      responses:
+        '200': { description: Обновлено }
+    patch:
+      tags: [Announcements]
+      summary: Частичное обновление объявления
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Announcement' }
+      responses:
+        '200': { description: Обновлено }
+    delete:
+      tags: [Announcements]
+      summary: Удалить объявление
+      responses:
+        '204': { description: Удалено }
+
+  /notifications/:
+    get:
+      tags: [Notifications]
+      summary: Список уведомлений текущего пользователя
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - name: unread
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/Notification' }
+
+  /notifications/{id}/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    get:
+      tags: [Notifications]
+      summary: Получить уведомление
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Notification' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Notifications]
+      summary: Удалить уведомление
+      responses:
+        '204': { description: Удалено }
+
+  /notifications/{id}/read/:
+    parameters:
+      - $ref: '#/components/parameters/id'
+    post:
+      tags: [Notifications]
+      summary: Отметить уведомление прочитанным
+      responses:
+        '200': { description: Отмечено }
+
+  /dashboard/:
+    get:
+      tags: [Dashboard]
+      summary: Данные дашборда
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  students_count: { type: integer }
+                  teachers_count: { type: integer }
+                  lessons_today: { type: integer }
+                  live_lessons: { type: integer }
+                  unread_notifications: { type: integer }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    page:
+      name: page
+      in: query
+      schema: { type: integer }
+    search:
+      name: search
+      in: query
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Неверный запрос
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: true
+    Unauthorized:
+      description: Не авторизован
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string }
+    NotFound:
+      description: Не найдено
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail: { type: string }
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        username: { type: string }
+        email: { type: string, format: email }
+        first_name: { type: string }
+        last_name: { type: string }
+        role: { type: string, enum: [admin, teacher, student, parent] }
+    School:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        address: { type: string }
+        phone: { type: string }
+    Building:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        school: { type: integer }
+        name: { type: string }
+    AcademicYear:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string, example: "2025/2026" }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        is_current: { type: boolean }
+    Subject:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        code: { type: string }
+    Room:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        building: { type: integer }
+        number: { type: string }
+        capacity: { type: integer }
+        room_type: { type: string, enum: [classroom, lab, gym, music] }
+    Grade:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        academic_year: { type: integer }
+        number: { type: integer }
+        letter: { type: string }
+        curator: { type: integer, nullable: true }
+    Teacher:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        user: { type: integer }
+        subjects:
+          type: array
+          items: { type: integer }
+        max_lessons_per_week: { type: integer }
+    TeacherAvailability:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        teacher: { type: integer }
+        weekday: { type: integer, minimum: 1, maximum: 7 }
+        time_slot: { type: integer }
+        is_available: { type: boolean }
+    Student:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        user: { type: integer }
+        grade: { type: integer }
+        admission_number: { type: string }
+    Parent:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        user: { type: integer }
+        children:
+          type: array
+          items: { type: integer }
+        phone: { type: string }
+    TimeSlot:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        order: { type: integer }
+        start_time: { type: string, format: time }
+        end_time: { type: string, format: time }
+    Schedule:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        grade: { type: integer }
+        subject: { type: integer }
+        teacher: { type: integer }
+        room: { type: integer }
+        weekday: { type: integer, minimum: 1, maximum: 7 }
+        time_slot: { type: integer }
+        academic_year: { type: integer }
+    Lesson:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        schedule: { type: integer }
+        date: { type: string, format: date }
+        topic: { type: string }
+        homework: { type: string, nullable: true }
+    SubjectHours:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        grade: { type: integer }
+        subject: { type: integer }
+        hours_per_week: { type: integer }
+        academic_year: { type: integer }
+    LessonReplacement:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        lesson: { type: integer }
+        new_teacher: { type: integer, nullable: true }
+        new_room: { type: integer, nullable: true }
+        new_date: { type: string, format: date, nullable: true }
+        new_time_slot: { type: integer, nullable: true }
+        reason: { type: string }
+        created_at: { type: string, format: date-time, readOnly: true }
+    Attendance:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        lesson: { type: integer }
+        student: { type: integer }
+        status: { type: string, enum: [present, absent, late, excused] }
+        comment: { type: string, nullable: true }
+    Mark:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        lesson: { type: integer }
+        student: { type: integer }
+        subject: { type: integer }
+        value: { type: integer, minimum: 1, maximum: 5 }
+        weight: { type: integer, default: 1 }
+        comment: { type: string, nullable: true }
+    Homework:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        lesson: { type: integer, nullable: true }
+        grade: { type: integer }
+        subject: { type: integer }
+        description: { type: string }
+        due_date: { type: string, format: date }
+    Announcement:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        title: { type: string }
+        body: { type: string }
+        audience: { type: string, enum: [all, teachers, students, parents] }
+        created_at: { type: string, format: date-time, readOnly: true }
+    Notification:
+      type: object
+      properties:
+        id: { type: integer, readOnly: true }
+        title: { type: string }
+        message: { type: string }
+        is_read: { type: boolean }
+        created_at: { type: string, format: date-time, readOnly: true }
