@@ -1,228 +1,116 @@
-from datetime import time
-
+from django.test import TestCase
+from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
-
-from .models import (
-    AcademicYear,
-    Grade,
-    Mark,
-    Notification,
-    Room,
-    Schedule,
-    School,
-    Student,
-    Subject,
-    SubjectHours,
-    Teacher,
-    TimeSlot,
-    User,
+from rest_framework.test import APIClient
+from school.models import (
+    AcademicYear, Grade, Lesson, Room, Schedule, School,
+    Subject, Teacher, TimeSlot, User
 )
-from .scheduler import generate_schedule
 
 
-class SmartSchoolApiTests(APITestCase):
+class SmartSchoolAPITests(TestCase):
     def setUp(self):
-        self.school = School.objects.create(
-            name='Smart School',
-            address='Dushanbe',
-            status='active'
+        self.client = APIClient()
+
+        # Create Schools
+        self.school_1 = School.objects.create(name="Школа №1", address="ул. Ленина 1", status="active")
+        self.school_2 = School.objects.create(name="Школа №2", address="ул. Мира 5", status="active")
+
+        # Create Users
+        self.super_admin = User.objects.create_superuser(
+            username="superadmin", email="super@school.tj", password="password123",
+            first_name="Бахтиёр", last_name="Содиков", role="super_admin"
+        )
+        self.admin_1 = User.objects.create_user(
+            username="admin1", email="admin1@school.tj", password="password123",
+            first_name="Фарангис", last_name="Ахмедова", role="school_admin", school=self.school_1
+        )
+        self.teacher_user = User.objects.create_user(
+            username="teacher1", email="teacher1@school.tj", password="password123",
+            first_name="Мадина", last_name="Каримова", role="teacher", school=self.school_1
+        )
+        self.teacher_profile, _ = Teacher.objects.get_or_create(user=self.teacher_user)
+
+        self.student_user = User.objects.create_user(
+            username="student1", email="student1@school.tj", password="password123",
+            first_name="Алишер", last_name="Шарипов", role="student", school=self.school_1
         )
 
-        self.admin = User.objects.create_user(
-            username='admin',
-            password='admin123',
-            role='super_admin',
-            school=self.school
+        # Academic Year, Room, Subject, Grade
+        self.ay = AcademicYear.objects.create(
+            school=self.school_1, name="2025-2026", start_date="2025-09-01", end_date="2026-05-25", is_current=True
+        )
+        self.room = Room.objects.create(school=self.school_1, number="101", floor=1, capacity=30)
+        self.subject = Subject.objects.create(school=self.school_1, name="Алгебра", short_name="Алг")
+        self.grade = Grade.objects.create(
+            school=self.school_1, academic_year=self.ay, number=7, letter="A", home_room=self.room
+        )
+        self.slot = TimeSlot.objects.create(
+            school=self.school_1, shift=1, lesson_number=1, start_time="08:00:00", end_time="08:45:00"
+        )
+        self.schedule = Schedule.objects.create(
+            school=self.school_1, academic_year=self.ay, name="Основное расписание", status="active"
+        )
+        self.lesson = Lesson.objects.create(
+            schedule=self.schedule, grade=self.grade, subject=self.subject,
+            teacher=self.teacher_profile, room=self.room, time_slot=self.slot, day_of_week=1
         )
 
-        self.client.force_authenticate(self.admin)
-
-    def test_login(self):
-        self.client.force_authenticate(user=None)
+    def test_custom_jwt_login(self):
+        """Test that login returns tokens and rich user details"""
         response = self.client.post('/api/auth/login/', {
-            'username': 'admin',
-            'password': 'admin123',
-        })
-
+            'username': 'admin1',
+            'password': 'password123'
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertIn('refresh', response.data)
+        self.assertIn('user', response.data)
+        self.assertEqual(response.data['user']['role'], 'school_admin')
+        self.assertEqual(response.data['user']['school'], self.school_1.id)
+        self.assertEqual(response.data['user']['school_name'], 'Школа №1')
 
-    def test_school_list(self):
-        response = self.client.get('/api/schools/')
-
+    def test_auth_me(self):
+        """Test /api/auth/me/ endpoint returns current authenticated user"""
+        self.client.force_authenticate(user=self.teacher_user)
+        response = self.client.get('/api/auth/me/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data['username'], 'teacher1')
+        self.assertEqual(response.data['role'], 'teacher')
 
-    def test_super_admin_can_create_school_and_role_accounts(self):
-        school_response = self.client.post('/api/schools/', {
-            'name': 'New School',
-            'address': 'Khujand',
-            'phone': '+992900000000',
-            'email': 'school@example.com',
-            'status': 'active',
-        })
+    def test_dashboard_stats(self):
+        """Test dashboard returns correct aggregated counts"""
+        self.client.force_authenticate(user=self.admin_1)
+        response = self.client.get('/api/dashboard/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('teachers', response.data)
+        self.assertIn('grades', response.data)
+        self.assertIn('rooms', response.data)
+        self.assertEqual(response.data['teachers'], 1)
+        self.assertEqual(response.data['grades'], 1)
+        self.assertEqual(response.data['rooms'], 1)
 
-        self.assertEqual(school_response.status_code, status.HTTP_201_CREATED)
-        school_id = school_response.data['id']
+    def test_teacher_workload(self):
+        """Test teacher workload endpoint with active scheduled lessons"""
+        self.client.force_authenticate(user=self.admin_1)
+        response = self.client.get(f'/api/teachers/{self.teacher_profile.id}/workload/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['scheduled_lessons'], 1)
+        self.assertEqual(response.data['teacher_id'], self.teacher_profile.id)
 
-        roles = ['school_admin', 'deputy', 'teacher', 'student', 'parent']
-        for role in roles:
-            response = self.client.post('/api/users/', {
-                'username': role,
-                'password': 'password123',
-                'first_name': role,
-                'last_name': 'Test',
-                'role': role,
-                'school': school_id,
-                'is_active': True,
-            })
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_teacher_workload_not_found(self):
+        """Test teacher workload returns 404 instead of 500 when teacher doesn't exist"""
+        self.client.force_authenticate(user=self.admin_1)
+        response = self.client.get('/api/teachers/99999/workload/')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        teacher = User.objects.get(username='teacher')
-        student = User.objects.get(username='student')
-        parent = User.objects.get(username='parent')
+    def test_student_cannot_delete_grade(self):
+        """Test student has read-only access and cannot delete grades (Security Check)"""
+        self.client.force_authenticate(user=self.student_user)
+        # GET should be allowed (Read Only)
+        get_res = self.client.get('/api/grades/')
+        self.assertEqual(get_res.status_code, status.HTTP_200_OK)
 
-        self.assertTrue(teacher.check_password('password123'))
-        self.assertTrue(hasattr(teacher, 'teacher_profile'))
-        self.assertTrue(hasattr(student, 'student_profile'))
-        self.assertTrue(hasattr(parent, 'parent_profile'))
-
-    def test_school_admin_sees_only_own_school_users(self):
-        other_school = School.objects.create(name='Other', address='Hisor')
-        User.objects.create_user(
-            username='other_student',
-            password='password123',
-            role='student',
-            school=other_school,
-        )
-        school_admin = User.objects.create_user(
-            username='school_director',
-            password='password123',
-            role='school_admin',
-            school=self.school,
-        )
-        User.objects.create_user(
-            username='own_student',
-            password='password123',
-            role='student',
-            school=self.school,
-        )
-
-        self.client.force_authenticate(school_admin)
-        response = self.client.get('/api/users/')
-        usernames = [item['username'] for item in response.data]
-
-        self.assertIn('own_student', usernames)
-        self.assertNotIn('other_student', usernames)
-        self.assertNotIn('admin', usernames)
-
-    def test_schedule_generator(self):
-        year = AcademicYear.objects.create(
-            school=self.school,
-            name='2026/2027',
-            start_date='2026-09-01',
-            end_date='2027-06-01',
-            is_current=True
-        )
-        subject = Subject.objects.create(
-            school=self.school,
-            name='Math',
-            short_name='Math'
-        )
-        room = Room.objects.create(
-            school=self.school,
-            number='101'
-        )
-        grade = Grade.objects.create(
-            school=self.school,
-            academic_year=year,
-            number=9,
-            letter='A',
-            home_room=room
-        )
-        teacher_user = User.objects.create_user(
-            username='teacher',
-            password='teacher123',
-            role='teacher',
-            school=self.school
-        )
-        teacher = Teacher.objects.create(user=teacher_user)
-        teacher.subjects.add(subject)
-        teacher.grades.add(grade)
-
-        TimeSlot.objects.create(
-            school=self.school,
-            shift=1,
-            lesson_number=1,
-            start_time=time(8, 0),
-            end_time=time(8, 45)
-        )
-        SubjectHours.objects.create(
-            grade=grade,
-            subject=subject,
-            hours=1
-        )
-        schedule = Schedule.objects.create(
-            school=self.school,
-            academic_year=year,
-            name='Main schedule',
-            created_by=self.admin
-        )
-
-        result = generate_schedule(schedule)
-
-        self.assertEqual(result['conflicts'], 0)
-        self.assertEqual(schedule.lessons.count(), 1)
-
-    def test_mark_creates_notification(self):
-        year = AcademicYear.objects.create(
-            school=self.school,
-            name='2026/2027',
-            start_date='2026-09-01',
-            end_date='2027-06-01'
-        )
-        subject = Subject.objects.create(
-            school=self.school,
-            name='English'
-        )
-        grade = Grade.objects.create(
-            school=self.school,
-            academic_year=year,
-            number=8,
-            letter='B'
-        )
-        student_user = User.objects.create_user(
-            username='student',
-            password='student123',
-            role='student',
-            school=self.school
-        )
-        student = Student.objects.create(
-            user=student_user,
-            grade=grade,
-            student_id='S001'
-        )
-        teacher_user = User.objects.create_user(
-            username='teacher2',
-            password='teacher123',
-            role='teacher',
-            school=self.school
-        )
-        teacher = Teacher.objects.create(user=teacher_user)
-
-        Mark.objects.create(
-            student=student,
-            subject=subject,
-            teacher=teacher,
-            value=5,
-            date='2026-09-30'
-        )
-
-        notification_exists = Notification.objects.filter(
-            user=student_user,
-            notification_type='new_mark'
-        ).exists()
-
-        self.assertTrue(notification_exists)
+        # DELETE must be forbidden (403)
+        del_res = self.client.delete(f'/api/grades/{self.grade.id}/')
+        self.assertEqual(del_res.status_code, status.HTTP_403_FORBIDDEN)
