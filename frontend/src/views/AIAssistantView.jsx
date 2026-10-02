@@ -18,6 +18,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { api } from '../services/api';
 
 export const AIAssistantView = () => {
   const { role, currentSchool, language, addToast, t } = useApp();
@@ -106,7 +107,7 @@ export const AIAssistantView = () => {
       : `🤖 Запрос успешно обработан: «${userQuery}».\n\nДанные проверены по базе школы. Все модули работают штатно. Готов выполнить расчёт расписания, сгенерировать отчёт или подготовить материалы по вашему запросу.`;
   };
 
-  const handleSendMessage = (textToSend = inputMessage) => {
+  const handleSendMessage = async (textToSend = inputMessage) => {
     const text = textToSend.trim();
     if (!text) return;
 
@@ -120,16 +121,26 @@ export const AIAssistantView = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const responseText = generateAIResponse(text);
-      const aiMsg = {
-        sender: 'ai',
-        text: responseText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 700);
+    let responseText = '';
+    try {
+      const res = await api.post('/ai/chat/', { message: text, language });
+      if (res && res.reply) {
+        responseText = res.reply;
+      } else {
+        responseText = generateAIResponse(text);
+      }
+    } catch (e) {
+      console.warn('API call fallback to local engine:', e);
+      responseText = generateAIResponse(text);
+    }
+
+    const aiMsg = {
+      sender: 'ai',
+      text: responseText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMessages(prev => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   const copyToClipboard = (text, idx) => {

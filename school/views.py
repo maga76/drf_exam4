@@ -1,7 +1,8 @@
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
+from rest_framework.views import APIView
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -890,3 +891,66 @@ class DashboardView(generics.GenericAPIView):
             'rooms': rooms.count(),
             'school_name': school.name if school else 'Все школы',
         })
+
+
+class AIChatView(APIView):
+    """
+    Интеллектуальный ассистент Smart School на базе Google Gemini.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        import urllib.request
+        import json
+        from django.conf import settings
+
+        user_message = request.data.get('message', '').strip()
+        language = request.data.get('language', 'ru')
+
+        if not user_message:
+            return Response({'error': 'Сообщение не может быть пустым.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        api_key = getattr(settings, 'GEMINI_API_KEY', '')
+        if not api_key:
+            return Response({'reply': 'API-ключ Google Gemini не настроен.'})
+
+        system_instruction = (
+            "Ты — официальный умный AI-ассистент системы управления школой Smart School. "
+            "Твоя задача — профессионально, вежливо, информативно и точно помогать администрации школы, "
+            "завучам, учителям и ученикам. Ты отлично разбираешься в составлении расписания уроков, "
+            "подборе замен преподавателей, анализе успеваемости, составлении школьных объявлений и методических вопросах. "
+            f"Отвечай строго на языке пользователя (таджикский, русский или английский). Язык интерфейса: {language}. "
+            "Используй понятное и красивое оформление со списками, эмодзи и выделением ключевых моментов."
+        )
+
+        gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent"
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"[Системная инструкция]: {system_instruction}\n\n[Вопрос пользователя]: {user_message}"}
+                    ]
+                }
+            ]
+        }
+
+        try:
+            req_data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                gemini_url,
+                data=req_data,
+                headers={
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': api_key
+                }
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                reply = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                return Response({'reply': reply})
+        except Exception as exc:
+            return Response({
+                'reply': f"Временная ошибка обращения к модели Gemini ({str(exc)}). Пожалуйста, повторите запрос.",
+                'error': True
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

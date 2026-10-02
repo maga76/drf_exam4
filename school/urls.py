@@ -87,4 +87,5 @@ urlpatterns = [
     path('notifications/<int:pk>/read/', views.NotificationReadView.as_view()),
 
     path('dashboard/', views.DashboardView.as_view()),
+    path('ai/chat/', views.AIChatView.as_view()),
 ]
