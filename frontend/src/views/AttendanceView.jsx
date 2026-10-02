@@ -20,7 +20,8 @@ import { Tabs } from '../components/ui/Tabs';
 import { Select, Input } from '../components/ui/Input';
 
 export const AttendanceView = () => {
-  const { classes, students, addToast } = useApp();
+  const { classes, students, addToast, role } = useApp();
+  const canEditAttendance = ['super_admin', 'admin', 'curriculum_director', 'teacher', 'homeroom_teacher'].includes(role);
 
   const [activeTab, setActiveTab] = useState('journal'); // journal | analytics
   const [selectedClassId, setSelectedClassId] = useState('cls-7a');
@@ -39,6 +40,7 @@ export const AttendanceView = () => {
   const classStudents = students.filter(s => s.classId === selectedClassId);
 
   const handleSetStatus = (studentId, status) => {
+    if (!canEditAttendance) return;
     setAttendanceMap(prev => ({
       ...prev,
       [studentId]: {
@@ -49,6 +51,7 @@ export const AttendanceView = () => {
   };
 
   const handleSetComment = (studentId, comment) => {
+    if (!canEditAttendance) return;
     setAttendanceMap(prev => ({
       ...prev,
       [studentId]: {
@@ -59,6 +62,7 @@ export const AttendanceView = () => {
   };
 
   const handleMarkAllPresent = () => {
+    if (!canEditAttendance) return;
     const updated = { ...attendanceMap };
     classStudents.forEach(st => {
       updated[st.id] = { status: 'present', comment: '' };
@@ -68,6 +72,10 @@ export const AttendanceView = () => {
   };
 
   const handleSave = () => {
+    if (!canEditAttendance) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Отмечать посещаемость могут только педагоги' });
+      return;
+    }
     addToast({
       type: 'success',
       title: 'Журнал сохранён',
@@ -94,7 +102,7 @@ export const AttendanceView = () => {
           </p>
         </div>
 
-        {activeTab === 'journal' && (
+        {canEditAttendance && activeTab === 'journal' && (
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -194,11 +202,14 @@ export const AttendanceView = () => {
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
                         type="button"
+                        disabled={!canEditAttendance}
                         onClick={() => handleSetStatus(st.id, 'present')}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          !canEditAttendance ? 'cursor-default opacity-85' : 'cursor-pointer hover:bg-slate-200'
+                        } ${
                           currentRecord.status === 'present'
                             ? 'bg-emerald-600 text-white shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
                         Присутствует (П)
@@ -206,11 +217,14 @@ export const AttendanceView = () => {
 
                       <button
                         type="button"
+                        disabled={!canEditAttendance}
                         onClick={() => handleSetStatus(st.id, 'absent')}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          !canEditAttendance ? 'cursor-default opacity-85' : 'cursor-pointer hover:bg-slate-200'
+                        } ${
                           currentRecord.status === 'absent'
                             ? 'bg-rose-600 text-white shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
                         Отсутствует (Н)
@@ -218,11 +232,14 @@ export const AttendanceView = () => {
 
                       <button
                         type="button"
+                        disabled={!canEditAttendance}
                         onClick={() => handleSetStatus(st.id, 'late')}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          !canEditAttendance ? 'cursor-default opacity-85' : 'cursor-pointer hover:bg-slate-200'
+                        } ${
                           currentRecord.status === 'late'
                             ? 'bg-amber-600 text-white shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
                         Опоздал (О)
@@ -230,11 +247,14 @@ export const AttendanceView = () => {
 
                       <button
                         type="button"
+                        disabled={!canEditAttendance}
                         onClick={() => handleSetStatus(st.id, 'excused')}
                         className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          !canEditAttendance ? 'cursor-default opacity-85' : 'cursor-pointer hover:bg-slate-200'
+                        } ${
                           currentRecord.status === 'excused'
                             ? 'bg-blue-600 text-white shadow-xs'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                         }`}
                       >
                         Уважительная (У)
