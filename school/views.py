@@ -17,6 +17,7 @@ from .permissions import (
     IsSuperAdmin,
     IsTeacher,
     IsTeacherOrReadOnly,
+    IsSchoolStaff,
 )
 from .serializers import *
 
@@ -291,7 +292,7 @@ class StudentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class ParentListCreateView(generics.ListCreateAPIView):
     serializer_class = ParentSerializer
-    permission_classes = [IsSchoolAdminOrReadOnly]
+    permission_classes = [IsSchoolStaff]
 
     def get_queryset(self):
         return get_school_queryset(Parent, self.request.user, school_field='user__school').select_related(
@@ -301,7 +302,7 @@ class ParentListCreateView(generics.ListCreateAPIView):
 
 class ParentDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ParentSerializer
-    permission_classes = [IsSchoolAdminOrReadOnly]
+    permission_classes = [IsSchoolStaff]
 
     def get_queryset(self):
         return get_school_queryset(Parent, self.request.user, school_field='user__school').select_related(
@@ -485,6 +486,10 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
         qs = Attendance.objects.select_related('student__user', 'lesson', 'marked_by').all()
         if user.is_superuser or user.role == 'super_admin':
             return qs
+        if user.role == 'student' and hasattr(user, 'student_profile'):
+            return qs.filter(student=user.student_profile)
+        if user.role == 'parent' and hasattr(user, 'parent_profile'):
+            return qs.filter(student__in=user.parent_profile.children.all())
         if user.school:
             return qs.filter(lesson__schedule__school=user.school)
         return qs.none()
@@ -526,6 +531,10 @@ class MarkDetailView(generics.RetrieveUpdateDestroyAPIView):
         qs = Mark.objects.select_related('student__user', 'subject', 'teacher__user').all()
         if user.is_superuser or user.role == 'super_admin':
             return qs
+        if user.role == 'student' and hasattr(user, 'student_profile'):
+            return qs.filter(student=user.student_profile)
+        if user.role == 'parent' and hasattr(user, 'parent_profile'):
+            return qs.filter(student__in=user.parent_profile.children.all())
         if user.school:
             return qs.filter(teacher__user__school=user.school)
         return qs.none()

@@ -86,3 +86,17 @@ class IsTeacherOrReadOnly(BasePermission):
         return request.user.is_superuser or request.user.role in [
             'super_admin', 'school_admin', 'deputy', 'teacher', 'class_teacher'
         ]
+
+
+class IsSchoolStaff(BasePermission):
+    """
+    Доступ только сотрудникам школы (учителя, завучи, администраторы).
+    Ученики и родители не имеют доступа к служебным реестрам школы.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (
+            request.user.is_superuser or request.user.role in [
+                'super_admin', 'school_admin', 'deputy', 'teacher', 'class_teacher'
+            ]
+        )
+
