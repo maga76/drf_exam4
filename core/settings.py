@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     # Наше приложение
     'school.apps.SchoolConfig',
+    'timetable',
 ]
 
 MIDDLEWARE = [
