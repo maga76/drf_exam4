@@ -602,7 +602,7 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsTeacherOrReadOnly]
 
     def get_queryset(self):
-        return Announcement.objects.select_related('school', 'author')
+        return get_school_queryset(Announcement, self.request.user).select_related('school', 'author')
 
 
 class NotificationListView(generics.ListAPIView):
@@ -813,7 +813,19 @@ class StudentMarkListView(generics.ListAPIView):
     serializer_class = MarkSerializer
 
     def get_queryset(self):
+        user = self.request.user
         student = get_object_or_404(Student, id=self.kwargs['pk'])
+        if not user.is_superuser and getattr(user, 'role', None) != 'super_admin':
+            if student.user.school_id != getattr(user, 'school_id', None):
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Доступ запрещен: ученик другой школы.")
+            if user.role == 'student' and hasattr(user, 'student_profile') and user.student_profile.id != student.id:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Вы можете просматривать только свои оценки.")
+            if user.role == 'parent' and hasattr(user, 'parent_profile'):
+                if not user.parent_profile.children.filter(id=student.id).exists():
+                    from rest_framework.exceptions import PermissionDenied
+                    raise PermissionDenied("Вы можете просматривать оценки только своих детей.")
         return Mark.objects.filter(student=student).select_related(
             'student__user', 'subject', 'teacher__user'
         ).order_by('-date')
