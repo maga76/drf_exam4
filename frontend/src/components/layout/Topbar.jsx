@@ -10,11 +10,12 @@ import {
   LogOut,
   Settings,
   Check,
-  Command
+  Building2,
+  Calendar,
+  ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Dropdown, DropdownItem, DropdownDivider } from '../ui/Dropdown';
-
 
 export const Topbar = () => {
   const {
@@ -25,6 +26,9 @@ export const Topbar = () => {
     role,
     switchRole,
     currentUser,
+    currentSchool,
+    setCurrentSchool,
+    schools,
     activeAcademicYear,
     setActiveAcademicYear,
     academicYears,
@@ -34,6 +38,7 @@ export const Topbar = () => {
     setSearchModalOpen,
     setMobileMenuOpen,
     setActiveView,
+    activeView,
     logoutUser
   } = useApp();
 
@@ -47,70 +52,156 @@ export const Topbar = () => {
     ['parent', 'Родитель']
   ];
 
+  // Map view to Frappe breadcrumbs (Desk / Category / Page)
+  const breadcrumbMap = {
+    dashboard: { section: 'Рабочие столы', label: 'Обзор школы' },
+    liveLessons: { section: 'Рабочие столы', label: 'Школа сейчас' },
+    classes: { section: 'Учебный процесс', label: 'Классы' },
+    subjects: { section: 'Учебный процесс', label: 'Предметы' },
+    schedule: { section: 'Учебный процесс', label: 'Расписание' },
+    scheduleWizard: { section: 'Учебный процесс', label: 'AI-мастер' },
+    yearsAndShifts: { section: 'Учебный процесс', label: 'Годы и смены' },
+    students: { section: 'Ученики', label: 'Реестр учеников' },
+    attendance: { section: 'Ученики', label: 'Посещаемость' },
+    grades: { section: 'Ученики', label: 'Журнал оценок' },
+    homework: { section: 'Ученики', label: 'Домашние задания' },
+    teachers: { section: 'Преподаватели', label: 'Учителя' },
+    substitutions: { section: 'Преподаватели', label: 'Замены уроков' },
+    announcements: { section: 'Коммуникация', label: 'Объявления' },
+    notifications: { section: 'Коммуникация', label: 'Уведомления' },
+    schoolManagement: { section: 'Настройки', label: 'Управление школами' },
+    classrooms: { section: 'Настройки', label: 'Кабинеты' },
+    reports: { section: 'Настройки', label: 'Аналитика' },
+    users: { section: 'Настройки', label: 'Пользователи' },
+    schoolSettings: { section: 'Настройки', label: 'Параметры школы' },
+    profile: { section: 'Пользователь', label: 'Профиль' }
+  };
+
+  const currentBreadcrumb = breadcrumbMap[activeView] || { section: 'Desk', label: 'Раздел' };
+
   return (
-    <header className="h-[76px] sticky top-0 z-30 px-4 sm:px-7 flex items-center justify-between gap-4 bg-white/95 dark:bg-[#101827]/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/10">
-      <div className="flex items-center gap-3 flex-1 max-w-xl">
+    <header className="h-14 sticky top-0 z-30 px-3 sm:px-6 flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border-b border-slate-200/90 dark:border-slate-800">
+      {/* Left: Mobile trigger & Frappe Breadcrumbs */}
+      <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="md:hidden w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center"
+          className="md:hidden w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300"
           aria-label="Открыть меню"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4" />
         </button>
 
+        {/* Frappe Desk Breadcrumb Navigation */}
+        <nav className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 min-w-0">
+          <button
+            onClick={() => setActiveView('dashboard')}
+            className="hover:text-slate-900 dark:hover:text-white font-medium transition-colors"
+          >
+            Desk
+          </button>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+          <span className="text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
+            {currentBreadcrumb.section}
+          </span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 shrink-0" />
+          <span className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[160px]">
+            {currentBreadcrumb.label}
+          </span>
+        </nav>
+      </div>
+
+      {/* Center: Frappe Awesomebar Search */}
+      <div className="flex-1 max-w-md mx-2">
         <button
           onClick={() => setSearchModalOpen(true)}
-          className="group w-full max-w-md h-11 flex items-center gap-3 px-4 rounded-2xl bg-[#f2f5f9] dark:bg-white/5 border border-transparent hover:border-blue-200 dark:hover:border-white/10 transition-all text-left"
+          className="group w-full h-8 flex items-center gap-2.5 px-3 rounded-lg bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-slate-700 transition-colors text-left"
+          title="Поиск по Desk (Ctrl+K)"
         >
-          <Search className="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-600" />
-          <span className="flex-1 text-sm text-slate-400 truncate">Найти ученика, учителя или класс</span>
-          <span className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-white/10 text-[10px] font-semibold text-slate-400 shadow-sm border border-slate-200/70 dark:border-white/10">
-            <Command className="w-3 h-3" /> K
+          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 shrink-0" />
+          <span className="flex-1 text-xs text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 truncate">
+            Search or type a command...
+          </span>
+          <span className="hidden sm:inline-flex items-center text-[10px] font-medium text-slate-400 bg-white dark:bg-slate-700 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-600 shadow-2xs">
+            Ctrl + K
           </span>
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      {/* Right: Actions, School selector, Notifications, Profile */}
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        {/* School Switcher */}
+        {schools && schools.length > 0 && (
+          <Dropdown
+            align="right"
+            trigger={
+              <button className="hidden lg:flex h-8 items-center gap-1.5 px-2.5 rounded-lg border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 transition-colors">
+                <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate max-w-[130px]">{currentSchool?.name || 'Школа'}</span>
+                <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+              </button>
+            }
+          >
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              Выбор школы
+            </div>
+            {schools.map(s => (
+              <DropdownItem
+                key={s.id}
+                onClick={() => setCurrentSchool(s)}
+              >
+                <span className="flex-1 truncate">{s.name}</span>
+                {currentSchool?.id === s.id && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white shrink-0" />}
+              </DropdownItem>
+            ))}
+          </Dropdown>
+        )}
+
+        {/* Academic Year Dropdown */}
         <Dropdown
           align="right"
           trigger={
-            <button className="hidden lg:flex h-10 items-center gap-2 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              {activeAcademicYear}
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <button className="hidden xl:flex h-8 items-center gap-1.5 px-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors">
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span>{activeAcademicYear}</span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
           }
         >
+          <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Учебный год
+          </div>
           {academicYears.map(year => (
             <DropdownItem key={year.id} onClick={() => setActiveAcademicYear(year.name)}>
               <span className="flex-1">{year.name}</span>
-              {activeAcademicYear === year.name && <Check className="w-4 h-4 text-blue-600" />}
+              {activeAcademicYear === year.name && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white" />}
             </DropdownItem>
           ))}
         </Dropdown>
 
+        {/* Role Pill Switcher */}
         <Dropdown
           align="right"
           trigger={
-            <button className="hidden xl:flex h-10 items-center gap-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-xs font-bold text-blue-700 dark:text-blue-300">
-              {roles.find(item => item[0] === role)?.[1] || role}
-              <ChevronDown className="w-3.5 h-3.5" />
+            <button className="hidden md:flex h-8 items-center gap-1.5 px-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200/80 transition-colors">
+              <span>{roles.find(item => item[0] === role)?.[1] || role}</span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
           }
         >
-          <div className="px-3 py-2 text-[10px] font-black tracking-wider uppercase text-slate-400">Рабочая роль</div>
+          <div className="px-3 py-1.5 text-[10px] font-bold tracking-wider uppercase text-slate-400">Рабочая роль</div>
           {roles.map(([value, label]) => (
             <DropdownItem key={value} onClick={() => switchRole(value)}>
               <span className="flex-1">{label}</span>
-              {role === value && <Check className="w-4 h-4 text-blue-600" />}
+              {role === value && <Check className="w-3.5 h-3.5 text-slate-900 dark:text-white" />}
             </DropdownItem>
           ))}
         </Dropdown>
 
+        {/* Language Switcher */}
         <Dropdown
           align="right"
           trigger={
-            <button className="w-10 h-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-xs font-black text-slate-600 dark:text-slate-300 uppercase">
+            <button className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 uppercase transition-colors">
               {language}
             </button>
           }
@@ -120,45 +211,51 @@ export const Topbar = () => {
           <DropdownItem onClick={() => setLanguage('en')}>English</DropdownItem>
         </Dropdown>
 
+        {/* Dark Mode Toggle */}
         <button
           onClick={toggleTheme}
-          className="w-10 h-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center text-slate-500"
+          className="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors"
           aria-label="Сменить тему"
         >
-          {theme === 'dark' ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
 
+        {/* Notifications Icon */}
         <Dropdown
           align="right"
           trigger={
-            <button className="relative w-10 h-10 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 flex items-center justify-center text-slate-500">
-              <Bell className="w-[18px] h-[18px]" />
+            <button className="relative w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors">
+              <Bell className="w-4 h-4" />
               {unreadNotificationsCount > 0 && (
-                <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#101827]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
               )}
             </button>
           }
         >
-          <div className="w-[340px] max-w-[85vw] p-3">
-            <div className="flex items-center justify-between px-1 pb-3 border-b border-slate-100 dark:border-white/10">
-              <div>
-                <div className="font-bold text-sm">Уведомления</div>
-                <div className="text-xs text-slate-400">{unreadNotificationsCount} новых событий</div>
+          <div className="w-[320px] max-w-[85vw] p-2">
+            <div className="flex items-center justify-between px-2 py-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="font-semibold text-xs text-slate-900 dark:text-white">
+                Уведомления ({unreadNotificationsCount})
               </div>
-              <button onClick={markAllNotificationsRead} className="text-xs font-semibold text-blue-600">Прочитать все</button>
+              <button
+                onClick={markAllNotificationsRead}
+                className="text-[11px] font-medium text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              >
+                Прочитать все
+              </button>
             </div>
-            <div className="py-2 space-y-1 max-h-72 overflow-y-auto">
+            <div className="py-1 space-y-0.5 max-h-64 overflow-y-auto">
               {notifications.slice(0, 5).map(item => (
                 <button
                   key={item.id}
                   onClick={() => setActiveView('notifications')}
-                  className="w-full text-left p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5"
+                  className="w-full text-left p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 >
-                  <div className="flex gap-3">
-                    <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${item.read ? 'bg-slate-300' : 'bg-blue-500'}`} />
-                    <div>
-                      <div className="text-sm font-semibold text-slate-800 dark:text-white">{item.title}</div>
-                      <div className="text-xs text-slate-500 mt-0.5 line-clamp-2">{item.message}</div>
+                  <div className="flex gap-2.5">
+                    <span className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${item.read ? 'bg-slate-300' : 'bg-rose-500'}`} />
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-slate-800 dark:text-white truncate">{item.title}</div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{item.message}</div>
                     </div>
                   </div>
                 </button>
@@ -167,27 +264,31 @@ export const Topbar = () => {
           </div>
         </Dropdown>
 
+        {/* User Profile Avatar Dropdown */}
         <Dropdown
           align="right"
           trigger={
-            <button className="ml-1 flex items-center gap-2.5 pl-1 sm:pl-2">
-              <img src={currentUser.avatar} alt="" className="w-10 h-10 rounded-[14px] object-cover ring-2 ring-white dark:ring-white/10 shadow-sm" />
-              <div className="hidden 2xl:block text-left max-w-[150px]">
-                <div className="text-xs font-bold text-slate-800 dark:text-white truncate">{currentUser.name}</div>
-                <div className="text-[11px] text-slate-400 truncate">{currentUser.roleTitle}</div>
-              </div>
-              <ChevronDown className="hidden sm:block w-3.5 h-3.5 text-slate-400" />
+            <button className="flex items-center gap-2 pl-1 pr-1.5 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <img
+                src={currentUser.avatar}
+                alt=""
+                className="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+              />
+              <span className="hidden xl:block text-xs font-medium text-slate-700 dark:text-slate-200 truncate max-w-[120px]">
+                {currentUser.name}
+              </span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
           }
         >
-          <div className="px-3 py-2.5 border-b border-slate-100 dark:border-white/10">
-            <div className="text-sm font-bold">{currentUser.name}</div>
-            <div className="text-xs text-slate-400">{currentUser.email}</div>
+          <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="text-xs font-semibold text-slate-900 dark:text-white">{currentUser.name}</div>
+            <div className="text-[11px] text-slate-400 truncate">{currentUser.email}</div>
           </div>
           <DropdownItem icon={User} onClick={() => setActiveView('profile')}>Мой профиль</DropdownItem>
-          <DropdownItem icon={Settings} onClick={() => setActiveView('settings')}>Настройки</DropdownItem>
+          <DropdownItem icon={Settings} onClick={() => setActiveView('schoolSettings')}>Параметры</DropdownItem>
           <DropdownDivider />
-          <DropdownItem icon={LogOut} danger onClick={logoutUser}>Выйти</DropdownItem>
+          <DropdownItem icon={LogOut} danger onClick={logoutUser}>Выйти из системы</DropdownItem>
         </Dropdown>
       </div>
     </header>
