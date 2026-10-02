@@ -50,6 +50,10 @@ export const ScheduleView = () => {
   const [lessonToDelete, setLessonToDelete] = useState(null);
   const [hasConflict, setHasConflict] = useState(true);
 
+  // Animation states for lesson addition and deletion
+  const [deletingLessonId, setDeletingLessonId] = useState(null);
+  const [newlyAddedLessonId, setNewlyAddedLessonId] = useState(null);
+
   const days = [
     { day: 1, name: "Понедельник", short: "Пн" },
     { day: 2, name: "Вторник", short: "Вт" },
@@ -122,8 +126,9 @@ export const ScheduleView = () => {
       } : item));
       addToast({ type: 'success', title: 'Урок обновлен', message: 'Изменения сохранены в расписании' });
     } else {
+      const newId = 'sch-' + Date.now();
       const newLesson = {
-        id: 'sch-' + Date.now(),
+        id: newId,
         ...lessonForm,
         className: selectedClass?.name || '7А',
         teacherName: selectedTeacher?.fullName || 'Учитель',
@@ -131,18 +136,25 @@ export const ScheduleView = () => {
         dayName: days.find(d => d.day === Number(lessonForm.day))?.name || 'День'
       };
       setSchedule(prev => [...prev, newLesson]);
+      setNewlyAddedLessonId(newId);
+      setTimeout(() => setNewlyAddedLessonId(null), 1800);
       addToast({ type: 'success', title: 'Урок добавлен', message: 'Новый урок внесен в сетку' });
     }
     setLessonModalOpen(false);
   };
 
   const handleDeleteLesson = () => {
-    if (lessonToDelete) {
-      setSchedule(prev => prev.filter(item => item.id !== lessonToDelete.id));
-      addToast({ type: 'info', title: 'Урок удален', message: 'Занятие снято с расписания' });
-      setDeleteConfirmOpen(false);
+    if (!lessonToDelete) return;
+    const targetId = lessonToDelete.id;
+    setDeletingLessonId(targetId);
+    setDeleteConfirmOpen(false);
+
+    setTimeout(() => {
+      setSchedule(prev => prev.filter(item => item.id !== targetId));
+      setDeletingLessonId(null);
       setLessonToDelete(null);
-    }
+      addToast({ type: 'info', title: 'Урок удален', message: 'Занятие снято с расписания' });
+    }, 320);
   };
 
   const colorStyles = {
@@ -371,9 +383,15 @@ export const ScheduleView = () => {
                       {lesson ? (
                         <div
                           onClick={() => handleOpenEditModal(lesson)}
-                          className={`p-2.5 rounded-lg border border-slate-200 border-l-[3px] text-xs cursor-pointer hover:border-slate-300 transition-all relative group ${
+                          className={`p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 border-l-[4px] text-xs cursor-pointer transition-all duration-300 relative group shadow-xs hover:shadow-md hover:-translate-y-0.5 ${
                             colorStyles[lesson.color] || colorStyles.indigo
-                          } ${isNowActive ? 'ring-1 ring-slate-900 dark:ring-white' : ''}`}
+                          } ${
+                            lesson.id === deletingLessonId
+                              ? 'animate-delete-out'
+                              : lesson.id === newlyAddedLessonId
+                              ? 'animate-item-appear ring-2 ring-emerald-400'
+                              : ''
+                          } ${isNowActive ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 shadow-md shadow-indigo-500/20' : ''}`}
                         >
                           <div className="flex items-start justify-between gap-1 mb-1">
                             <span className="font-semibold text-xs tracking-tight truncate text-slate-900 dark:text-white">
@@ -386,7 +404,7 @@ export const ScheduleView = () => {
                                   setLessonToDelete(lesson);
                                   setDeleteConfirmOpen(true);
                                 }}
-                                className="text-rose-500 hover:text-rose-700 p-0.5"
+                                className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-1 rounded-md transition-all"
                                 title="Удалить урок"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -401,7 +419,8 @@ export const ScheduleView = () => {
                           <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                             <span>Каб. {lesson.roomNumber}</span>
                             {isNowActive && (
-                              <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                              <span className="font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Сейчас
                               </span>
                             )}

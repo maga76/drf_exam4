@@ -9,6 +9,7 @@ export const Table = ({
   emptyTitle = "Ничего не найдено",
   emptyDescription = "Попробуйте изменить поисковый запрос или фильтры",
   onRowClick,
+  rowClassName,
   className = ''
 }) => {
   const [sortKey, setSortKey] = useState(null);
@@ -86,26 +87,29 @@ export const Table = ({
                 </td>
               </tr>
             ) : (
-              paginatedData.map((row, idx) => (
-                <tr
-                  key={row.id || idx}
-                  onClick={() => onRowClick && onRowClick(row)}
-                  className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
-                    onRowClick ? 'cursor-pointer' : ''
-                  }`}
-                >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={`px-4 py-3 text-slate-700 dark:text-slate-300 align-middle ${
-                        col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
-                      }`}
-                    >
-                      {col.render ? col.render(row[col.key], row, idx) : row[col.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              paginatedData.map((row, idx) => {
+                const customRowClass = typeof rowClassName === 'function' ? rowClassName(row) : (rowClassName || '');
+                return (
+                  <tr
+                    key={row.id || idx}
+                    onClick={() => onRowClick && onRowClick(row)}
+                    className={`transition-all duration-300 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 ${
+                      onRowClick ? 'cursor-pointer' : ''
+                    } ${customRowClass}`}
+                  >
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className={`px-4 py-3.5 text-slate-700 dark:text-slate-300 align-middle ${
+                          col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
+                        }`}
+                      >
+                        {col.render ? col.render(row[col.key], row, idx) : row[col.key]}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

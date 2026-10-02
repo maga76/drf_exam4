@@ -21,26 +21,46 @@ import { Button } from '../components/ui/Button';
 import { api } from '../services/api';
 
 export const AIAssistantView = () => {
-  const { role, currentSchool, language, addToast, t } = useApp();
+  const { role, currentSchool, language, setLanguage, addToast, t } = useApp();
 
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
 
+  const getGreeting = (lang) => {
+    if (lang === 'tj') {
+      return `Салом! Ман Smart School AI — ёвари зеҳнии мактаби шумо ҳастам. Ман метавонам дар тартиб додани ҷадвали дарсҳо, таҳлили давомот, пайдо кардани ҷойгузини омӯзгорон ва навиштани эълонҳо кӯмак кунам. Чӣ кор карда метавонам?`;
+    }
+    if (lang === 'en') {
+      return `Hello! I am Smart School AI — your intelligent school assistant. I can help optimize schedules, analyze student performance, suggest teacher substitutions, and draft announcements. How can I assist you today?`;
+    }
+    return `Здравствуйте! Я Smart School AI — интеллектуальный ассистент вашей школы. Я помогаю составлять расписание без коллизий, подбирать замены учителям, анализировать успеваемость и создавать учебные материалы. Чем могу помочь?`;
+  };
+
   const initialMessages = [
     {
       sender: 'ai',
-      text: language === 'tj' 
-        ? `Салом! Ман Smart School AI — ёвари зеҳнии мактаби шумо ҳастам. Ман метавонам дар тартиб додани ҷадвали дарсҳо, таҳлили давомот, пайдо кардани ҷойгузини омӯзгорон ва навиштани эълонҳо кӯмак кунам. Чӣ кор карда метавонам?`
-        : language === 'en'
-        ? `Hello! I am Smart School AI — your intelligent school assistant. I can help optimize schedules, analyze student performance, suggest teacher substitutions, and draft announcements. How can I assist you today?`
-        : `Здравствуйте! Я Smart School AI — интеллектуальный ассистент вашей школы. Я помогаю составлять расписание без коллизий, подбирать замены учителям, анализировать успеваемость и создавать учебные материалы. Чем могу помочь?`,
+      text: getGreeting(language),
       time: '12:00'
     }
   ];
 
   const [messages, setMessages] = useState(initialMessages);
+
+  // Sync greeting if only initial greeting is present
+  const handleLanguageChange = (newLang) => {
+    setLanguage(newLang);
+    if (messages.length <= 1) {
+      setMessages([
+        {
+          sender: 'ai',
+          text: getGreeting(newLang),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    }
+  };
 
   const quickPrompts = [
     {
@@ -155,15 +175,15 @@ export const AIAssistantView = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 animate-pulse-glow">
             <Sparkles className="w-6 h-6 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
                 Smart School AI Assistant
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs uppercase tracking-wider">
                 PRO 2.0
               </span>
             </div>
@@ -177,15 +197,53 @@ export const AIAssistantView = () => {
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setMessages(initialMessages)}
-          className="self-start sm:self-auto"
-        >
-          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-          {language === 'tj' ? 'Тоза кардани чат' : language === 'en' ? 'Reset Chat' : 'Очистить чат'}
-        </Button>
+        <div className="flex items-center gap-3 self-start sm:self-auto flex-wrap">
+          {/* Trilingual Toggle */}
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl border border-slate-200/80 dark:border-slate-700/60 shadow-xs">
+            <button
+              type="button"
+              onClick={() => handleLanguageChange('tj')}
+              className={`px-2.5 py-1 text-xs rounded-lg font-semibold transition-all ${
+                language === 'tj'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              🇹🇯 Тоҷикӣ
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange('ru')}
+              className={`px-2.5 py-1 text-xs rounded-lg font-semibold transition-all ${
+                language === 'ru'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              🇷🇺 Русский
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange('en')}
+              className={`px-2.5 py-1 text-xs rounded-lg font-semibold transition-all ${
+                language === 'en'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMessages(initialMessages)}
+          >
+            <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+            {language === 'tj' ? 'Тоза кардан' : language === 'en' ? 'Reset' : 'Очистить'}
+          </Button>
+        </div>
       </div>
 
       {/* Quick Prompt Cards */}
@@ -194,20 +252,20 @@ export const AIAssistantView = () => {
           <button
             key={idx}
             onClick={() => handleSendMessage(item.prompt)}
-            className="p-3.5 rounded-xl text-left bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all hover:shadow-sm group flex flex-col justify-between"
+            className="p-4 rounded-2xl text-left bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all hover:shadow-lg hover:-translate-y-1 group flex flex-col justify-between"
           >
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {item.title}
                 </span>
-                <Sparkles className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                <Sparkles className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 group-hover:scale-110 transition-all" />
               </div>
-              <p className="text-[11px] text-slate-500 line-clamp-2">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                 {item.desc}
               </p>
             </div>
-            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold mt-3 flex items-center">
+            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold mt-3 flex items-center group-hover:translate-x-1 transition-transform">
               {language === 'tj' ? 'Иҷро кардан →' : language === 'en' ? 'Execute →' : 'Применить →'}
             </span>
           </button>
@@ -215,26 +273,26 @@ export const AIAssistantView = () => {
       </div>
 
       {/* Main Chat Box */}
-      <Card className="flex flex-col h-[560px] p-0 overflow-hidden border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <Card className="flex flex-col h-[560px] p-0 overflow-hidden border-slate-200/80 dark:border-slate-800 shadow-xl backdrop-blur-xl">
         {/* Messages Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/30">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/40 dark:bg-slate-950/40">
           {messages.map((msg, index) => {
             const isUser = msg.sender === 'user';
             return (
               <div
                 key={index}
-                className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'} animate-pop-in`}
               >
                 {!isUser && (
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center text-white shrink-0 shadow-sm shadow-indigo-500/20">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-md shadow-indigo-500/20">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
 
                 <div className={`relative max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                   isUser
-                    ? 'bg-indigo-600 text-white rounded-br-none shadow-sm shadow-indigo-600/10'
-                    : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800 rounded-bl-none shadow-sm'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-br-none shadow-md shadow-indigo-600/20'
+                    : 'bg-white/95 dark:bg-slate-900/95 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-800/80 rounded-bl-none shadow-card'
                 }`}>
                   <div className="whitespace-pre-line font-normal">
                     {msg.text}

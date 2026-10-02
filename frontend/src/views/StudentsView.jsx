@@ -47,6 +47,10 @@ export const StudentsView = () => {
   const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
   const [studentToArchive, setStudentToArchive] = useState(null);
 
+  // Animation states for addition and deletion
+  const [deletingStudentId, setDeletingStudentId] = useState(null);
+  const [newlyAddedStudentId, setNewlyAddedStudentId] = useState(null);
+
   const filteredStudents = students.filter(st => {
     const matchesSearch =
       st.fullName.toLowerCase().includes(search.toLowerCase()) ||
@@ -88,8 +92,9 @@ export const StudentsView = () => {
       } : s));
       addToast({ type: 'success', title: 'Ученик обновлён', message: 'Данные личного дела сохранены' });
     } else {
+      const newId = 'std-' + Date.now();
       const newSt = {
-        id: 'std-' + Date.now(),
+        id: newId,
         ...studentForm,
         className: targetClass?.name || '7А',
         gpa: 4.5,
@@ -101,6 +106,8 @@ export const StudentsView = () => {
         ]
       };
       setStudents(prev => [newSt, ...prev]);
+      setNewlyAddedStudentId(newId);
+      setTimeout(() => setNewlyAddedStudentId(null), 1800);
       addToast({ type: 'success', title: 'Ученик зачислен', message: 'Новый ученик добавлен в класс' });
     }
     setEditModalOpen(false);
@@ -121,11 +128,17 @@ export const StudentsView = () => {
   };
 
   const handleArchive = () => {
-    if (studentToArchive) {
-      setStudents(prev => prev.filter(s => s.id !== studentToArchive.id));
+    if (!studentToArchive) return;
+    const targetId = studentToArchive.id;
+    setDeletingStudentId(targetId);
+    setArchiveConfirmOpen(false);
+
+    setTimeout(() => {
+      setStudents(prev => prev.filter(s => s.id !== targetId));
+      setDeletingStudentId(null);
+      setStudentToArchive(null);
       addToast({ type: 'info', title: 'Ученик архивирован', message: 'Дело перемещено в архив школы' });
-      setArchiveConfirmOpen(false);
-    }
+    }, 320);
   };
 
   const columns = [
@@ -298,6 +311,14 @@ export const StudentsView = () => {
       <Table
         columns={columns}
         data={filteredStudents}
+        pageSize={8}
+        rowClassName={(row) =>
+          row.id === deletingStudentId
+            ? 'animate-row-delete bg-rose-50/70 dark:bg-rose-950/40'
+            : row.id === newlyAddedStudentId
+            ? 'animate-item-appear ring-2 ring-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/20'
+            : ''
+        }
         emptyTitle="Ученики не найдены"
         emptyDescription="Попробуйте изменить поисковый запрос или сбросить фильтры"
       />

@@ -18,12 +18,19 @@ import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { Input, Select, Textarea, SearchInput } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 export const AnnouncementsView = () => {
   const { announcements, setAnnouncements, addToast } = useApp();
 
   const [search, setSearch] = useState('');
   const [audienceFilter, setAudienceFilter] = useState('all');
+
+  // Animation states for addition and deletion
+  const [deletingAnnId, setDeletingAnnId] = useState(null);
+  const [newlyAddedAnnId, setNewlyAddedAnnId] = useState(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [annToDelete, setAnnToDelete] = useState(null);
 
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -45,10 +52,26 @@ export const AnnouncementsView = () => {
     return matchesSearch && matchesAudience;
   });
 
+  const handleConfirmDelete = () => {
+    if (!annToDelete) return;
+    const targetId = annToDelete.id;
+    setDeletingAnnId(targetId);
+    setConfirmDeleteOpen(false);
+    if (selectedAnn?.id === targetId) setDetailModalOpen(false);
+
+    setTimeout(() => {
+      setAnnouncements(prev => prev.filter(a => a.id !== targetId));
+      setDeletingAnnId(null);
+      setAnnToDelete(null);
+      addToast({ type: 'info', title: 'Объявление удалено', message: 'Новость снята с публикации' });
+    }, 320);
+  };
+
   const handleCreate = () => {
     if (!form.title) return;
+    const newId = 'ann-' + Date.now();
     const newAnn = {
-      id: 'ann-' + Date.now(),
+      id: newId,
       title: form.title,
       author: 'Дирекция школы',
       authorRole: 'Администратор',
@@ -59,8 +82,11 @@ export const AnnouncementsView = () => {
     };
 
     setAnnouncements(prev => [newAnn, ...prev]);
+    setNewlyAddedAnnId(newId);
+    setTimeout(() => setNewlyAddedAnnId(null), 1800);
     addToast({ type: 'success', title: 'Опубликовано', message: 'Новость добавлена в общую ленту' });
     setCreateModalOpen(false);
+    setForm({ title: '', targetAudience: 'all', pinned: false, content: '' });
   };
 
   const audienceLabels = {
@@ -130,10 +156,16 @@ export const AnnouncementsView = () => {
                 setSelectedAnn(ann);
                 setDetailModalOpen(true);
               }}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer shadow-card hover:shadow-card-hover ${
+              className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer shadow-card hover:shadow-card-hover group relative ${
+                ann.id === deletingAnnId
+                  ? 'animate-delete-out'
+                  : ann.id === newlyAddedAnnId
+                  ? 'animate-item-appear ring-2 ring-emerald-400'
+                  : ''
+              } ${
                 ann.pinned
-                  ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800/60'
-                  : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800'
+                  ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200/80 dark:border-indigo-800/60 hover:border-indigo-400'
+                  : 'bg-white/95 dark:bg-slate-900/95 border-slate-200/80 dark:border-slate-800 hover:border-slate-300'
               }`}
             >
               <div className="flex items-start justify-between gap-3 mb-2">
@@ -149,10 +181,24 @@ export const AnnouncementsView = () => {
                   <span className="text-xs text-slate-400">• {ann.date}</span>
                 </div>
 
-                <span className="text-xs text-slate-400 font-medium">{ann.authorRole}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 font-medium">{ann.authorRole}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAnnToDelete(ann);
+                      setConfirmDeleteOpen(true);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all"
+                    title="Удалить новость"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
 
-              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                 {ann.title}
               </h3>
 
@@ -236,7 +282,22 @@ export const AnnouncementsView = () => {
           title={selectedAnn.title}
           subtitle={`Опубликовано: ${selectedAnn.date} • ${selectedAnn.author}`}
           maxWidth="max-w-xl"
-          footer={<Button onClick={() => setDetailModalOpen(false)}>Закрыть</Button>}
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={() => {
+                  setAnnToDelete(selectedAnn);
+                  setConfirmDeleteOpen(true);
+                }}
+              >
+                Удалить
+              </Button>
+              <Button onClick={() => setDetailModalOpen(false)}>Закрыть</Button>
+            </div>
+          }
         >
           <div className="space-y-4 text-xs sm:text-sm">
             <div className="flex gap-2">
@@ -249,6 +310,16 @@ export const AnnouncementsView = () => {
           </div>
         </Modal>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        onClose={() => setConfirmDeleteOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Удаление новости"
+        message={`Удалить объявление «${annToDelete?.title}» из ленты школы?`}
+        confirmText="Удалить"
+      />
     </div>
   );
 };

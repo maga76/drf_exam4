@@ -38,9 +38,12 @@ export const Badge = ({
   const currentDotColor = dotColors[variant] || 'bg-current';
 
   return (
-    <span className={`inline-flex items-center tracking-tight transition-colors ${sizes[size]} ${variants[variant]} ${className}`}>
+    <span className={`inline-flex items-center tracking-tight transition-all rounded-full ${sizes[size]} ${variants[variant]} ${className}`}>
       {dot && (
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${currentDotColor}`} />
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${currentDotColor}`} />
+          <span className={`relative inline-flex rounded-full h-2 w-2 ${currentDotColor}`} />
+        </span>
       )}
       {children}
     </span>

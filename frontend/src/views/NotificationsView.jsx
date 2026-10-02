@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Bell,
   Check,
@@ -9,7 +8,8 @@ import {
   FileText,
   AlertCircle,
   Settings,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/Button';
@@ -19,10 +19,11 @@ import { Modal } from '../components/ui/Modal';
 import { Switch } from '../components/ui/Switch';
 
 export const NotificationsView = () => {
-  const { notifications, setNotifications, markAllNotificationsRead, setActiveView } = useApp();
+  const { notifications, setNotifications, markAllNotificationsRead, setActiveView, addToast } = useApp();
 
   const [filterType, setFilterType] = useState('all');
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [deletingNotifId, setDeletingNotifId] = useState(null);
 
   // Settings switches
   const [channels, setChannels] = useState({
@@ -52,6 +53,16 @@ export const NotificationsView = () => {
 
   const handleMarkOne = (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleDeleteNotification = (id, e) => {
+    e.stopPropagation();
+    setDeletingNotifId(id);
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      setDeletingNotifId(null);
+      addToast({ type: 'info', title: 'Уведомление удалено', message: 'Оповещение скрыто' });
+    }, 320);
   };
 
   const getIcon = (type) => {
@@ -114,28 +125,46 @@ export const NotificationsView = () => {
                 handleMarkOne(n.id);
                 if (n.link) setActiveView(n.link);
               }}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 shadow-card hover:shadow-card-hover ${
+              className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer flex items-start justify-between gap-3 shadow-card hover:shadow-card-hover group relative ${
+                n.id === deletingNotifId ? 'animate-delete-out' : ''
+              } ${
                 n.read
-                  ? 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 opacity-80'
+                  ? 'bg-white/95 dark:bg-slate-900/95 border-slate-200/80 dark:border-slate-800 opacity-80'
                   : 'bg-indigo-50/50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800'
               }`}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 flex-1">
                 <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 mt-0.5">
                   {getIcon(n.type)}
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
                       {n.title}
                     </span>
-                    {!n.read && <span className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />}
+                    {!n.read && (
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                     {n.message}
                   </p>
                   <span className="text-[11px] text-slate-400 mt-2 block">{n.timestamp}</span>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteNotification(n.id, e)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                  title="Удалить уведомление"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
 
               {!n.read && (

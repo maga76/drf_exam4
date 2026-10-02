@@ -33,13 +33,13 @@ export const Modal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity animate-backdrop-fade"
         onClick={onClose}
       />
 
       {/* Modal Card */}
       <div
-        className={`relative w-full ${maxWidth} bg-white dark:bg-slate-900 rounded-2xl shadow-modal border border-slate-200/80 dark:border-slate-800 overflow-hidden transform transition-all z-10 my-8 animate-fade-in ${className}`}
+        className={`relative w-full ${maxWidth} bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden transform transition-all z-10 my-8 animate-modal-pop ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

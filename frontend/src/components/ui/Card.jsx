@@ -12,9 +12,19 @@ export const Card = ({
   return (
     <div
       onClick={onClick}
-      className={`frappe-card p-5 sm:p-6 ${
-        hoverEffect ? 'hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer' : ''
-      } ${className}`}
+      className={`rounded-2xl transition-all duration-300 ${
+        glass
+          ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 shadow-card'
+          : 'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-card'
+      } ${
+        hoverEffect
+          ? 'hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/5 hover:border-indigo-400/40 dark:hover:border-indigo-500/40 cursor-pointer'
+          : ''
+      } ${
+        gradientBorder
+          ? 'relative before:absolute before:inset-0 before:p-[1px] before:bg-gradient-to-r before:from-indigo-500 before:via-purple-500 before:to-pink-500 before:rounded-2xl before:-z-10'
+          : ''
+      } p-5 sm:p-6 ${className}`}
       {...props}
     >
       {children}
