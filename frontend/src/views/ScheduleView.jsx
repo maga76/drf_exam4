@@ -12,7 +12,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Input, Select } from '../components/ui/Input';
+import { Select } from '../components/ui/Input';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 
 export const ScheduleView = () => {
@@ -27,16 +27,13 @@ export const ScheduleView = () => {
     addToast
   } = useApp();
 
-  // View by: 'class' | 'teacher' | 'room'
   const [viewMode, setViewMode] = useState('class');
   const [selectedClassId, setSelectedClassId] = useState('cls-7a');
   const [selectedTeacherId, setSelectedTeacherId] = useState('tch-1');
   const [selectedRoomNumber, setSelectedRoomNumber] = useState('302');
 
-  // Mobile day tab: 1 (Пн) .. 6 (Сб)
   const [mobileDay, setMobileDay] = useState(1);
 
-  // Lesson Edit/Add Modal
   const [lessonModalOpen, setLessonModalOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null);
   const [lessonForm, setLessonForm] = useState({
@@ -49,11 +46,8 @@ export const ScheduleView = () => {
     color: 'indigo'
   });
 
-  // Delete Confirm Dialog
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState(null);
-
-  // Conflict state simulation
   const [hasConflict, setHasConflict] = useState(true);
 
   const days = [
@@ -74,7 +68,6 @@ export const ScheduleView = () => {
     { number: 6, time: "12:25 – 13:05" },
   ];
 
-  // Filter lessons based on viewMode
   const filteredSchedule = schedule.filter(item => {
     if (viewMode === 'class') return item.classId === selectedClassId;
     if (viewMode === 'teacher') return item.teacherId === selectedTeacherId;
@@ -120,7 +113,6 @@ export const ScheduleView = () => {
     const targetSlot = slots.find(s => s.number === Number(lessonForm.slotNumber));
 
     if (editingLesson) {
-      // Update
       setSchedule(prev => prev.map(item => item.id === editingLesson.id ? {
         ...item,
         ...lessonForm,
@@ -128,9 +120,8 @@ export const ScheduleView = () => {
         teacherName: selectedTeacher?.fullName || item.teacherName,
         time: targetSlot ? targetSlot.time : item.time
       } : item));
-      addToast({ type: 'success', title: 'Урок обновлён', message: 'Изменения сохранены в расписании' });
+      addToast({ type: 'success', title: 'Урок обновлен', message: 'Изменения сохранены в расписании' });
     } else {
-      // Add
       const newLesson = {
         id: 'sch-' + Date.now(),
         ...lessonForm,
@@ -140,7 +131,7 @@ export const ScheduleView = () => {
         dayName: days.find(d => d.day === Number(lessonForm.day))?.name || 'День'
       };
       setSchedule(prev => [...prev, newLesson]);
-      addToast({ type: 'success', title: 'Урок добавлен', message: 'Новый урок внесён в сетку расписания' });
+      addToast({ type: 'success', title: 'Урок добавлен', message: 'Новый урок внесен в сетку' });
     }
     setLessonModalOpen(false);
   };
@@ -148,43 +139,40 @@ export const ScheduleView = () => {
   const handleDeleteLesson = () => {
     if (lessonToDelete) {
       setSchedule(prev => prev.filter(item => item.id !== lessonToDelete.id));
-      addToast({ type: 'info', title: 'Урок удалён', message: 'Занятие удалено из расписания' });
+      addToast({ type: 'info', title: 'Урок удален', message: 'Занятие снято с расписания' });
       setDeleteConfirmOpen(false);
       setLessonToDelete(null);
     }
   };
 
   const colorStyles = {
-    indigo: "border-l-indigo-500 bg-indigo-50/50",
-    blue: "border-l-blue-500 bg-blue-50/50",
-    emerald: "border-l-emerald-500 bg-emerald-50/50",
-    teal: "border-l-teal-500 bg-teal-50/50",
-    amber: "border-l-amber-500 bg-amber-50/50",
-    purple: "border-l-purple-500 bg-purple-50/50",
-    violet: "border-l-violet-500 bg-violet-50/50",
-    cyan: "border-l-cyan-500 bg-cyan-50/50",
-    lime: "border-l-lime-500 bg-lime-50/50",
-    rose: "border-l-rose-500 bg-rose-50/50",
-    orange: "border-l-orange-500 bg-orange-50/50"
+    indigo: "border-l-slate-700 bg-slate-50/70",
+    blue: "border-l-sky-500 bg-sky-50/40",
+    emerald: "border-l-emerald-500 bg-emerald-50/40",
+    teal: "border-l-teal-500 bg-teal-50/40",
+    amber: "border-l-amber-500 bg-amber-50/40",
+    purple: "border-l-purple-500 bg-purple-50/40",
+    violet: "border-l-violet-500 bg-violet-50/40",
+    cyan: "border-l-cyan-500 bg-cyan-50/40",
+    lime: "border-l-lime-500 bg-lime-50/40",
+    rose: "border-l-rose-500 bg-rose-50/40",
+    orange: "border-l-orange-500 bg-orange-50/40"
   };
 
   return (
-    <div className="space-y-5">
-      {/* Action Bar Header */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 mb-2">
-            <CalendarRange className="w-4 h-4" /> Учебный процесс
-          </div>
-          <h1 className="text-2xl sm:text-[30px] font-extrabold tracking-[-0.03em] text-[#14213d] dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <CalendarRange className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             Расписание на неделю
           </h1>
-          <p className="text-sm text-slate-500 mt-1.5">
-            29 сентября — 4 октября · первая смена
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            29 сентября — 4 октября · 1-я смена
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             size="sm"
@@ -192,13 +180,13 @@ export const ScheduleView = () => {
             icon={WandSparkles}
             onClick={() => setActiveView('scheduleWizard')}
           >
-            Собрать расписание
+            AI-мастер
           </Button>
           <Button
             size="sm"
             variant="outline"
             icon={Download}
-            onClick={() => addToast({ type: 'info', title: 'Экспорт', message: 'Файл расписания сформирован в Excel/PDF' })}
+            onClick={() => addToast({ type: 'info', title: 'Экспорт', message: 'Расписание выгружено' })}
           >
             Экспорт
           </Button>
@@ -214,70 +202,68 @@ export const ScheduleView = () => {
 
       {/* Conflict Warning Alert Banner */}
       {hasConflict && (
-        <div className="p-4 rounded-[18px] bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-950">
+        <div className="p-3 sm:p-4 rounded-xl bg-amber-50/80 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-900">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0"><AlertTriangle className="w-4 h-4 text-amber-700" /></div>
-            <span><strong>Нужно проверить кабинет 102.</strong> В среду на 4-м уроке он назначен сразу для 7А и 9Б.</span>
+            <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+            <span><strong>Конфликт кабинета 102:</strong> В среду на 4-м уроке назначен для 7А и 9Б.</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setHasConflict(false);
-                addToast({ type: 'success', title: 'Конфликт устранён', message: 'Кабинет для 9Б перенесён в 208' });
-              }}
-              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-            >
-              Исправить автоматически
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setHasConflict(false);
+              addToast({ type: 'success', title: 'Конфликт устранен', message: 'Кабинет для 9Б перенесен в 208' });
+            }}
+            className="px-2.5 py-1 text-xs font-medium rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors self-start sm:self-auto"
+          >
+            Исправить
+          </button>
         </div>
       )}
 
       {/* Filter and View Switcher Toolbar */}
-      <div className="p-3 rounded-[18px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-[0_6px_24px_rgba(15,23,42,0.04)] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        {/* View Mode Pills: by Class / by Teacher / by Room */}
-        <div className="flex items-center gap-1 p-1 bg-[#f1f4f8] dark:bg-slate-800 rounded-xl self-start">
+      <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Frappe Segmented Control */}
+        <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg self-start">
           <button
             onClick={() => setViewMode('class')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               viewMode === 'class'
-                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
             По классу
           </button>
           <button
             onClick={() => setViewMode('teacher')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               viewMode === 'teacher'
-                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
             По учителю
           </button>
           <button
             onClick={() => setViewMode('room')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
               viewMode === 'room'
-                ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-2xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
             По кабинету
           </button>
         </div>
 
-        {/* Dynamic Selectors depending on viewMode */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Dynamic Selectors */}
+        <div className="flex items-center gap-2.5 flex-wrap">
           {viewMode === 'class' && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">Класс:</span>
+              <span className="text-xs text-slate-500">Класс:</span>
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+                className="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
               >
                 {classes.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c.homeroomTeacher})</option>
@@ -288,11 +274,11 @@ export const ScheduleView = () => {
 
           {viewMode === 'teacher' && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">Учитель:</span>
+              <span className="text-xs text-slate-500">Учитель:</span>
               <select
                 value={selectedTeacherId}
                 onChange={(e) => setSelectedTeacherId(e.target.value)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+                className="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
               >
                 {teachers.map(t => (
                   <option key={t.id} value={t.id}>{t.fullName} ({t.subjectName})</option>
@@ -303,11 +289,11 @@ export const ScheduleView = () => {
 
           {viewMode === 'room' && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">Кабинет:</span>
+              <span className="text-xs text-slate-500">Кабинет:</span>
               <select
                 value={selectedRoomNumber}
                 onChange={(e) => setSelectedRoomNumber(e.target.value)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
+                className="px-2.5 py-1 text-xs font-medium rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
               >
                 {classrooms.map(r => (
                   <option key={r.id} value={r.number}>Каб. {r.number} ({r.type})</option>
@@ -319,22 +305,22 @@ export const ScheduleView = () => {
           <Button
             size="sm"
             icon={CircleCheck}
-            onClick={() => addToast({ type: 'success', title: 'Опубликовано', message: 'Расписание опубликовано для всех учеников и учителей' })}
+            onClick={() => addToast({ type: 'success', title: 'Опубликовано', message: 'Расписание обновлено для всех пользователей' })}
           >
             Опубликовать
           </Button>
         </div>
       </div>
 
-      {/* Mobile Day Tabs (Requirement: "отдельный удобный мобильный вид по дням") */}
-      <div className="md:hidden flex items-center justify-between gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto">
+      {/* Mobile Day Tabs */}
+      <div className="md:hidden flex items-center justify-between gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-x-auto">
         {days.map((d) => (
           <button
             key={d.day}
             onClick={() => setMobileDay(d.day)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex-1 text-center transition-all ${
+            className={`px-3 py-1 text-xs font-medium rounded-md flex-1 text-center transition-all ${
               mobileDay === d.day
-                ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-semibold shadow-2xs'
                 : 'text-slate-500'
             }`}
           >
@@ -343,19 +329,19 @@ export const ScheduleView = () => {
         ))}
       </div>
 
-      {/* Desktop Weekly Grid (Mon-Sat, 6 columns + time column) */}
-      <div className="hidden md:block overflow-x-auto border border-slate-200/80 dark:border-slate-800 rounded-[22px] bg-white dark:bg-slate-900 shadow-[0_12px_35px_rgba(15,23,42,0.06)]">
+      {/* Desktop Weekly Matrix */}
+      <div className="hidden md:block overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-[#f8fafc] dark:bg-slate-800/40">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/40">
               <th className="p-3 w-28 text-xs font-semibold text-slate-400 uppercase tracking-wider text-center">
                 Урок / Время
               </th>
               {days.map((d) => (
                 <th key={d.day} className="p-3 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-l border-slate-100 dark:border-slate-800">
                   <div>
-                    <span className="block text-[11px]">{d.name}</span>
-                    <span className="block mt-1 text-[11px] font-normal text-slate-400 normal-case">{28 + d.day} сентября</span>
+                    <span className="block text-xs">{d.name}</span>
+                    <span className="block text-[11px] font-normal text-slate-400 normal-case">{28 + d.day} сентября</span>
                   </div>
                 </th>
               ))}
@@ -363,10 +349,9 @@ export const ScheduleView = () => {
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {slots.map((slot) => (
-              <tr key={slot.number} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors">
-                {/* Time Slot column */}
-                <td className="p-3 text-center align-top bg-slate-50/40 dark:bg-slate-800/20">
-                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              <tr key={slot.number} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/20 transition-colors">
+                <td className="p-2.5 text-center align-top bg-slate-50/50 dark:bg-slate-800/30">
+                  <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {slot.number}-й урок
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">
@@ -374,26 +359,24 @@ export const ScheduleView = () => {
                   </div>
                 </td>
 
-                {/* Day Columns */}
                 {days.map((d) => {
                   const lesson = getLessonForSlot(d.day, slot.number);
-                  const isNowActive = d.day === 3 && slot.number === 2; // Wednesday 2nd lesson
+                  const isNowActive = d.day === 3 && slot.number === 2;
 
                   return (
                     <td
                       key={d.day}
-                      className="p-2 border-l border-slate-100 dark:border-slate-800 align-top h-24 min-w-[170px]"
+                      className="p-1.5 border-l border-slate-100 dark:border-slate-800 align-top h-24 min-w-[155px]"
                     >
                       {lesson ? (
                         <div
                           onClick={() => handleOpenEditModal(lesson)}
-                          className={`p-3 rounded-xl border border-slate-200 border-l-[3px] text-xs cursor-pointer hover:border-slate-300 hover:shadow-md transition-all relative group ${
+                          className={`p-2.5 rounded-lg border border-slate-200 border-l-[3px] text-xs cursor-pointer hover:border-slate-300 transition-all relative group ${
                             colorStyles[lesson.color] || colorStyles.indigo
-                          } ${isNowActive ? 'ring-2 ring-blue-500 ring-offset-1' : ''}`}
+                          } ${isNowActive ? 'ring-1 ring-slate-900 dark:ring-white' : ''}`}
                         >
-                          {/* Subject & Quick actions */}
                           <div className="flex items-start justify-between gap-1 mb-1">
-                            <span className="font-bold text-[13px] tracking-tight truncate text-slate-900">
+                            <span className="font-semibold text-xs tracking-tight truncate text-slate-900 dark:text-white">
                               {lesson.subjectName}
                             </span>
                             <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
@@ -406,7 +389,7 @@ export const ScheduleView = () => {
                                 className="text-rose-500 hover:text-rose-700 p-0.5"
                                 title="Удалить урок"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3 h-3" />
                               </button>
                             </div>
                           </div>
@@ -415,10 +398,10 @@ export const ScheduleView = () => {
                             {viewMode === 'class' ? lesson.teacherName : lesson.className}
                           </div>
 
-                          <div className="mt-2 flex items-center justify-between text-[10px] font-semibold text-slate-500 pt-1.5 border-t border-slate-200/70">
+                          <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                             <span>Каб. {lesson.roomNumber}</span>
                             {isNowActive && (
-                              <span className="text-blue-700 font-bold uppercase tracking-wider">
+                              <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                                 Сейчас
                               </span>
                             )}
@@ -427,10 +410,10 @@ export const ScheduleView = () => {
                       ) : (
                         <button
                           onClick={() => handleOpenAddModal(d.day, slot.number)}
-                          className="w-full h-full min-h-[76px] rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-300 hover:bg-blue-50/30 text-slate-300 hover:text-blue-600 flex items-center justify-center transition-all group"
-                          title="Добавить урок в этот слот"
+                          className="w-full h-full min-h-[72px] rounded-lg border border-dashed border-slate-200 dark:border-slate-800 hover:border-slate-300 hover:bg-slate-50 text-slate-300 hover:text-slate-600 flex items-center justify-center transition-all group"
+                          title="Добавить урок"
                         >
-                          <Plus className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <Plus className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </button>
                       )}
                     </td>
@@ -443,8 +426,8 @@ export const ScheduleView = () => {
       </div>
 
       {/* Mobile Day-by-Day View */}
-      <div className="md:hidden space-y-3">
-        <h4 className="font-semibold text-sm text-slate-700 dark:text-slate-300">
+      <div className="md:hidden space-y-2.5">
+        <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider">
           {days.find(d => d.day === mobileDay)?.name}
         </h4>
         {slots.map((slot) => {
@@ -452,18 +435,18 @@ export const ScheduleView = () => {
           return (
             <div
               key={slot.number}
-              className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex items-center justify-between gap-3 text-xs"
+              className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 font-bold flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold flex items-center justify-center shrink-0">
                   {slot.number}
                 </div>
                 <div>
-                  <div className="text-[11px] text-slate-400">{slot.time}</div>
+                  <div className="text-[10px] text-slate-400">{slot.time}</div>
                   {lesson ? (
                     <div>
-                      <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{lesson.subjectName}</span>
-                      <p className="text-slate-500 mt-0.5">{lesson.teacherName} • Каб. {lesson.roomNumber}</p>
+                      <span className="font-semibold text-xs text-slate-900 dark:text-white">{lesson.subjectName}</span>
+                      <p className="text-slate-500 text-[11px]">{lesson.teacherName} · Каб. {lesson.roomNumber}</p>
                     </div>
                   ) : (
                     <span className="text-slate-400 italic">Свободный слот</span>
@@ -473,7 +456,7 @@ export const ScheduleView = () => {
 
               {lesson ? (
                 <Button size="sm" variant="ghost" onClick={() => handleOpenEditModal(lesson)}>
-                  <Edit2 className="w-3.5 h-3.5" />
+                  <Edit2 className="w-3 h-3" />
                 </Button>
               ) : (
                 <Button size="sm" variant="secondary" onClick={() => handleOpenAddModal(mobileDay, slot.number)}>
@@ -489,21 +472,20 @@ export const ScheduleView = () => {
       <Modal
         isOpen={lessonModalOpen}
         onClose={() => setLessonModalOpen(false)}
-        title={editingLesson ? "Редактирование урока" : "Добавление урока в расписание"}
-        subtitle="Заполните информацию о предмете, преподавателе и кабинете"
+        title={editingLesson ? "Редактирование урока" : "Добавление урока"}
         maxWidth="max-w-lg"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setLessonModalOpen(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setLessonModalOpen(false)}>
               Отмена
             </Button>
-            <Button onClick={handleSaveLesson}>
-              {editingLesson ? "Сохранить изменения" : "Добавить урок"}
+            <Button size="sm" onClick={handleSaveLesson}>
+              {editingLesson ? "Сохранить" : "Добавить"}
             </Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Select
               label="День недели"
@@ -555,21 +537,6 @@ export const ScheduleView = () => {
               {classrooms.map(r => <option key={r.id} value={r.number}>Каб. {r.number} ({r.type})</option>)}
             </Select>
           </div>
-
-          <Select
-            label="Цветовое выделение карточки"
-            value={lessonForm.color}
-            onChange={(e) => setLessonForm({ ...lessonForm, color: e.target.value })}
-          >
-            <option value="indigo">Индиго (Основной)</option>
-            <option value="blue">Синий (Точные науки)</option>
-            <option value="emerald">Изумрудный (Языки)</option>
-            <option value="teal">Бирюзовый (Литература)</option>
-            <option value="amber">Янтарный (Физика)</option>
-            <option value="rose">Розовый (Химия)</option>
-            <option value="cyan">Голубой (Информатика)</option>
-            <option value="lime">Лайм (Спорт)</option>
-          </Select>
         </div>
       </Modal>
 
@@ -579,8 +546,8 @@ export const ScheduleView = () => {
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={handleDeleteLesson}
         title="Удаление урока"
-        message={`Вы действительно хотите удалить урок «${lessonToDelete?.subjectName}» (${lessonToDelete?.className}) из сетки расписания?`}
-        confirmText="Удалить урок"
+        message={`Удалить урок «${lessonToDelete?.subjectName}» (${lessonToDelete?.className}) из расписания?`}
+        confirmText="Удалить"
       />
     </div>
   );
