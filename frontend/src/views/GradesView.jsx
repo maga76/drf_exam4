@@ -1,18 +1,9 @@
 import React, { useState } from 'react';
 import {
   BookOpen,
-  Calendar,
-  Save,
-  Award,
-  Filter,
-  TrendingUp,
-  Download,
-  Eye,
-  Plus,
-  MessageSquare
+  Download
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
@@ -27,7 +18,7 @@ export const GradesView = () => {
 
   // Inline Grade Editor Modal
   const [gradeModalOpen, setGradeModalOpen] = useState(false);
-  const [activeCell, setActiveCell] = useState(null); // { studentId, studentName, colId, colTopic, currentGrade }
+  const [activeCell, setActiveCell] = useState(null);
   const [selectedScore, setSelectedScore] = useState(5);
   const [teacherComment, setTeacherComment] = useState('');
 
@@ -37,7 +28,6 @@ export const GradesView = () => {
 
   const classStudents = students.filter(s => s.classId === selectedClassId);
   const currentSubject = subjects.find(s => s.id === selectedSubjectId) || subjects[0];
-
   const columns = gradesMatrix.columns;
 
   const handleCellClick = (student, col) => {
@@ -70,8 +60,8 @@ export const GradesView = () => {
       }));
       addToast({
         type: 'success',
-        title: 'Оценка сохранена',
-        message: `Выставлена оценка «${selectedScore}» ученику ${activeCell.studentName}`
+        title: 'Оценка выставлена',
+        message: `Балл ${selectedScore} для ${activeCell.studentName}`
       });
       setGradeModalOpen(false);
     }
@@ -102,23 +92,23 @@ export const GradesView = () => {
   };
 
   const gradePillColors = {
-    5: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-    4: "bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border-teal-200 dark:border-teal-800",
-    3: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-    2: "bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800",
+    5: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+    4: "bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800",
+    3: "bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
+    2: "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-indigo-600" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             Электронный журнал оценок
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Текущая и итоговая успеваемость по четвертям с расчётом среднего балла
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Успеваемость по четвертям и текущим урокам · Средний балл рассчитывается автоматически
           </p>
         </div>
 
@@ -127,15 +117,15 @@ export const GradesView = () => {
             size="sm"
             variant="outline"
             icon={Download}
-            onClick={() => addToast({ type: 'info', title: 'Экспорт журнала', message: 'Ведомость оценок выгружена в Excel' })}
+            onClick={() => addToast({ type: 'info', title: 'Экспорт журнала', message: 'Ведомость выгружена в Excel' })}
           >
             Экспорт в Excel
           </Button>
         </div>
       </div>
 
-      {/* Filter toolbar: Class, Subject, Period */}
-      <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card flex flex-wrap items-center gap-3">
+      {/* Filter Toolbar */}
+      <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-wrap items-center gap-3">
         <div className="w-40">
           <Select
             label="Класс"
@@ -172,35 +162,34 @@ export const GradesView = () => {
       </div>
 
       {/* Gradebook Spreadsheet Matrix */}
-      <div className="border border-slate-200/80 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 shadow-card overflow-x-auto">
-        <table className="w-full border-collapse text-left text-sm">
+      <div className="border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-xs overflow-x-auto">
+        <table className="w-full border-collapse text-left text-xs sm:text-sm">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40">
-              <th className="p-3.5 w-10 text-xs font-semibold text-slate-400 text-center uppercase">
+            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/75 dark:bg-slate-800/40">
+              <th className="p-3 w-10 text-xs font-semibold text-slate-400 text-center uppercase">
                 №
               </th>
-              <th className="p-3.5 w-60 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <th className="p-3 w-60 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                 Учащийся
               </th>
 
-              {/* Lesson Date / Topic columns */}
               {columns.map((col) => (
                 <th
                   key={col.id}
-                  className={`p-3 text-center border-l border-slate-100 dark:border-slate-800 min-w-[90px] ${
-                    col.type === 'control' ? 'bg-amber-50/50 dark:bg-amber-950/30' : ''
+                  className={`p-2.5 text-center border-l border-slate-200/80 dark:border-slate-800 min-w-[80px] ${
+                    col.type === 'control' ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
                   }`}
                 >
-                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     {col.date}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate max-w-[80px] mx-auto" title={col.topic}>
+                  <div className="text-[10px] text-slate-400 truncate max-w-[75px] mx-auto" title={col.topic}>
                     {col.type === 'control' ? 'Контрольная' : col.type === 'quiz' ? 'Сам. раб.' : 'Урок'}
                   </div>
                 </th>
               ))}
 
-              <th className="p-3.5 w-24 text-center border-l border-slate-200 dark:border-slate-800 text-xs font-bold text-indigo-700 dark:text-indigo-400 uppercase">
+              <th className="p-3 w-24 text-center border-l border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase">
                 Ср. балл
               </th>
             </tr>
@@ -210,8 +199,8 @@ export const GradesView = () => {
             {classStudents.map((st, idx) => {
               const avg = calculateStudentAvg(st.id);
               return (
-                <tr key={st.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                  <td className="p-3 text-center text-xs font-semibold text-slate-400">
+                <tr key={st.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+                  <td className="p-3 text-center text-xs text-slate-400">
                     {idx + 1}
                   </td>
                   <td className="p-3 font-medium text-slate-900 dark:text-slate-100 whitespace-nowrap">
@@ -220,38 +209,36 @@ export const GradesView = () => {
                         setSelectedStudentForReport(st);
                         setStudentModalOpen(true);
                       }}
-                      className="hover:text-indigo-600 hover:underline text-left"
+                      className="hover:underline text-left"
                     >
                       {st.fullName}
                     </button>
                   </td>
 
-                  {/* Grades columns */}
                   {columns.map((col) => {
                     const gradeVal = gradesMatrix.grades[st.id]?.[col.id];
                     return (
                       <td
                         key={col.id}
                         onClick={() => handleCellClick(st, col)}
-                        className={`p-2 text-center border-l border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-indigo-50/60 dark:hover:bg-indigo-950/40 transition-colors select-none ${
+                        className={`p-1.5 text-center border-l border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors select-none ${
                           col.type === 'control' ? 'bg-amber-50/20 dark:bg-amber-950/10' : ''
                         }`}
                       >
                         {gradeVal ? (
-                          <span className={`inline-block w-8 h-8 leading-8 rounded-xl font-bold text-sm border ${
+                          <span className={`inline-flex items-center justify-center w-7 h-7 rounded font-bold text-xs border ${
                             gradePillColors[gradeVal] || gradePillColors[5]
                           }`}>
                             {gradeVal}
                           </span>
                         ) : (
-                          <span className="inline-block w-8 h-8 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-400" />
+                          <span className="inline-block w-7 h-7 rounded border border-dashed border-slate-200 dark:border-slate-800 hover:border-slate-400" />
                         )}
                       </td>
                     );
                   })}
 
-                  {/* Average Grade Column */}
-                  <td className="p-3 text-center border-l border-slate-200 dark:border-slate-800 font-extrabold text-sm text-indigo-700 dark:text-indigo-400 bg-slate-50/40 dark:bg-slate-800/20">
+                  <td className="p-3 text-center border-l border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-800 dark:text-slate-200 bg-slate-50/30">
                     ★ {avg}
                   </td>
                 </tr>
@@ -267,7 +254,7 @@ export const GradesView = () => {
           isOpen={gradeModalOpen}
           onClose={() => setGradeModalOpen(false)}
           title={`Выставление оценки: ${activeCell.studentName}`}
-          subtitle={`${activeCell.colDate} • ${activeCell.colTopic} (${activeCell.colType === 'control' ? 'Контрольная работа' : 'Текущий урок'})`}
+          subtitle={`${activeCell.colDate} · ${activeCell.colTopic}`}
           maxWidth="max-w-md"
           footer={
             <div className="flex items-center justify-between w-full">
@@ -278,23 +265,23 @@ export const GradesView = () => {
               )}
               <div className="flex items-center gap-2 ml-auto">
                 <Button variant="secondary" size="sm" onClick={() => setGradeModalOpen(false)}>Отмена</Button>
-                <Button size="sm" onClick={handleSaveGrade}>Сохранить оценку</Button>
+                <Button size="sm" onClick={handleSaveGrade}>Сохранить</Button>
               </div>
             </div>
           }
         >
-          <div className="space-y-4">
-            <span className="text-xs font-semibold text-slate-500 block uppercase">Выберите балл:</span>
-            <div className="grid grid-cols-4 gap-3">
+          <div className="space-y-3">
+            <span className="text-xs font-medium text-slate-500 block uppercase">Выберите балл:</span>
+            <div className="grid grid-cols-4 gap-2.5">
               {[5, 4, 3, 2].map((score) => (
                 <button
                   key={score}
                   type="button"
                   onClick={() => setSelectedScore(score)}
-                  className={`py-3 rounded-2xl font-extrabold text-xl border-2 transition-all ${
+                  className={`py-2.5 rounded-lg font-bold text-lg border transition-all ${
                     selectedScore === score
-                      ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 scale-105 shadow-sm'
-                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      ? 'border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900 shadow-xs'
+                      : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
                   }`}
                 >
                   {score}
@@ -303,8 +290,8 @@ export const GradesView = () => {
             </div>
 
             <Input
-              label="Комментарий к оценке (опционально)"
-              placeholder="Например: Отличная подготовка, замечаний нет"
+              label="Комментарий к оценке"
+              placeholder="За работу у доски, домашнее задание..."
               value={teacherComment}
               onChange={(e) => setTeacherComment(e.target.value)}
             />
@@ -317,32 +304,32 @@ export const GradesView = () => {
         <Modal
           isOpen={studentModalOpen}
           onClose={() => setStudentModalOpen(false)}
-          title={`Табель учащегося: ${selectedStudentForReport.fullName}`}
-          subtitle={`${selectedStudentForReport.className} класс • Текущий средний балл: ★ ${selectedStudentForReport.gpa}`}
+          title={`Успеваемость: ${selectedStudentForReport.fullName}`}
+          subtitle={`${selectedStudentForReport.className} класс · Средний балл: ★ ${selectedStudentForReport.gpa}`}
           maxWidth="max-w-md"
-          footer={<Button onClick={() => setStudentModalOpen(false)}>Закрыть</Button>}
+          footer={<Button size="sm" onClick={() => setStudentModalOpen(false)}>Закрыть</Button>}
         >
           <div className="space-y-3 text-xs sm:text-sm">
-            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl space-y-1">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg">
               <span className="text-xs text-slate-400">Предмет:</span>
-              <div className="font-bold text-slate-800 dark:text-slate-200">{currentSubject.name}</div>
+              <div className="font-semibold text-slate-800 dark:text-slate-200">{currentSubject.name}</div>
             </div>
-            <div className="p-3 border rounded-xl space-y-2">
+            <div className="p-3 border border-slate-200 dark:border-slate-800 rounded-lg space-y-2">
               <div className="flex justify-between">
                 <span>Линейные уравнения:</span>
-                <span className="font-bold text-emerald-600">5 (отлично)</span>
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">5 (отлично)</span>
               </div>
               <div className="flex justify-between">
                 <span>Самостоятельная работа:</span>
-                <span className="font-bold text-emerald-600">5 (отлично)</span>
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">5 (отлично)</span>
               </div>
               <div className="flex justify-between">
                 <span>Свойства степеней:</span>
-                <span className="font-bold text-teal-600">4 (хорошо)</span>
+                <span className="font-semibold text-teal-700 dark:text-teal-400">4 (хорошо)</span>
               </div>
               <div className="flex justify-between">
                 <span>Контрольная работа №1:</span>
-                <span className="font-bold text-emerald-600">5 (отлично)</span>
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">5 (отлично)</span>
               </div>
             </div>
           </div>
