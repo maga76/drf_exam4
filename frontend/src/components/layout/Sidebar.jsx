@@ -21,10 +21,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Building2,
-  Sparkles
+  Bell,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-
 
 export const Sidebar = () => {
   const {
@@ -38,36 +38,53 @@ export const Sidebar = () => {
 
   const sections = [
     {
-      title: 'Сегодня',
+      title: 'Рабочие столы',
       items: [
         { id: 'dashboard', label: 'Обзор школы', icon: LayoutDashboard },
-        { id: 'liveLessons', label: 'Школа сейчас', icon: Radio, badge: 'LIVE' },
-        { id: 'schedule', label: 'Расписание', icon: CalendarDays },
-        { id: 'substitutions', label: 'Замены', icon: Repeat2, badge: '2' }
+        { id: 'liveLessons', label: 'Школа сейчас', icon: Radio, badge: 'LIVE', badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }
       ]
     },
     {
       title: 'Учебный процесс',
       items: [
-        { id: 'teachers', label: 'Учителя', icon: GraduationCap, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'students', label: 'Ученики', icon: Users, roles: ['super_admin', 'admin', 'curriculum_director', 'homeroom_teacher'] },
         { id: 'classes', label: 'Классы', icon: School },
+        { id: 'subjects', label: 'Предметы', icon: LibraryBig, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'schedule', label: 'Расписание', icon: CalendarDays },
+        { id: 'scheduleWizard', label: 'AI-мастер расписания', icon: WandSparkles, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'yearsAndShifts', label: 'Годы и смены', icon: CalendarRange, roles: ['super_admin', 'admin'] }
+      ]
+    },
+    {
+      title: 'Ученики',
+      items: [
+        { id: 'students', label: 'Ученики', icon: Users, roles: ['super_admin', 'admin', 'curriculum_director', 'homeroom_teacher'] },
         { id: 'attendance', label: 'Посещаемость', icon: ClipboardCheck },
         { id: 'grades', label: 'Журнал оценок', icon: BookOpenCheck },
         { id: 'homework', label: 'Домашние задания', icon: NotebookTabs }
       ]
     },
     {
-      title: 'Управление',
+      title: 'Преподаватели',
+      items: [
+        { id: 'teachers', label: 'Учителя', icon: GraduationCap, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'substitutions', label: 'Замены уроков', icon: Repeat2, badge: '2', badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200' }
+      ]
+    },
+    {
+      title: 'Коммуникация',
+      items: [
+        { id: 'announcements', label: 'Объявления', icon: Megaphone },
+        { id: 'notifications', label: 'Уведомления', icon: Bell }
+      ]
+    },
+    {
+      title: 'Настройки и Админ',
       items: [
         { id: 'schoolManagement', label: 'Управление школами', icon: Building2, roles: ['super_admin'] },
         { id: 'classrooms', label: 'Кабинеты', icon: DoorOpen },
-        { id: 'subjects', label: 'Предметы', icon: LibraryBig, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'announcements', label: 'Объявления', icon: Megaphone },
-        { id: 'reports', label: 'Аналитика', icon: ChartNoAxesCombined },
-        { id: 'scheduleWizard', label: 'AI-расписание', icon: WandSparkles, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'users', label: 'Пользователи', icon: ShieldCheck, roles: ['super_admin', 'admin'] },
-        { id: 'yearsAndShifts', label: 'Годы и смены', icon: CalendarRange, roles: ['super_admin', 'admin'] }
+        { id: 'reports', label: 'Аналитика и отчеты', icon: ChartNoAxesCombined },
+        { id: 'users', label: 'Пользователи и права', icon: ShieldCheck, roles: ['super_admin', 'admin'] },
+        { id: 'schoolSettings', label: 'Параметры школы', icon: Settings, roles: ['super_admin', 'admin'] }
       ]
     }
   ];
@@ -75,96 +92,106 @@ export const Sidebar = () => {
   const isVisible = (item) => !item.roles || item.roles.includes(role);
 
   return (
-    <aside className={`hidden md:flex h-screen sticky top-0 flex-col bg-gradient-to-b from-[#091129] via-[#0b1739] to-[#070e24] text-white transition-all duration-300 shrink-0 border-r border-white/10 ${sidebarCollapsed ? 'w-[84px]' : 'w-[268px]'}`}>
-      {/* Brand Header */}
-      <div className="h-[76px] flex items-center px-5 border-b border-white/10">
+    <aside
+      className={`hidden md:flex h-screen sticky top-0 flex-col bg-white dark:bg-slate-900 border-r border-slate-200/90 dark:border-slate-800 transition-all duration-200 shrink-0 z-20 ${
+        sidebarCollapsed ? 'w-[72px]' : 'w-[250px]'
+      }`}
+    >
+      {/* Frappe Desk Header Brand */}
+      <div className="h-14 flex items-center px-4 border-b border-slate-200/80 dark:border-slate-800">
         <button
           onClick={() => setActiveView('dashboard')}
-          className={`flex items-center gap-3.5 min-w-0 ${sidebarCollapsed ? 'mx-auto' : ''}`}
+          className={`flex items-center gap-3 min-w-0 ${sidebarCollapsed ? 'mx-auto' : ''}`}
+          title="Smart School Desk"
         >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-600/30 relative shrink-0">
-            <School className="w-5 h-5 text-white" />
-            <span className="absolute -right-1 -top-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-[#091129] shadow-sm shadow-amber-400/50" />
+          <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-white dark:text-slate-900 font-bold shrink-0 shadow-sm">
+            <School className="w-4 h-4" />
           </div>
           {!sidebarCollapsed && (
             <div className="text-left min-w-0">
-              <div className="font-black text-[18px] tracking-tight text-white flex items-center gap-1.5">
+              <div className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
                 Smart School
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-500/30 text-indigo-300 border border-indigo-500/30">PRO</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  Desk
+                </span>
               </div>
-              <div className="text-[11px] font-medium text-blue-200/70 truncate">{currentSchool.name}</div>
+              <div className="text-[11px] text-slate-400 dark:text-slate-500 truncate max-w-[150px]">
+                {currentSchool?.name || 'Education'}
+              </div>
             </div>
           )}
         </button>
       </div>
 
       {/* Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3.5 py-5 space-y-6">
-        {sections.map(section => (
-          <div key={section.title}>
-            {!sidebarCollapsed && (
-              <div className="px-3 mb-2 text-[10px] font-extrabold tracking-[0.18em] uppercase text-blue-200/40">
-                {section.title}
-              </div>
-            )}
-            <div className="space-y-1">
-              {section.items.filter(isVisible).map(item => {
-                const Icon = item.icon;
-                const active = activeView === item.id;
+      <div className="flex-1 overflow-y-auto px-2.5 py-3.5 space-y-5">
+        {sections.map(section => {
+          const visibleItems = section.items.filter(isVisible);
+          if (visibleItems.length === 0) return null;
 
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveView(item.id)}
-                    title={sidebarCollapsed ? item.label : undefined}
-                    className={`w-full h-11 flex items-center rounded-xl transition-all duration-200 ${
-                      sidebarCollapsed ? 'justify-center' : 'px-3 gap-3'
-                    } ${
-                      active
-                        ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/25 scale-[1.01]'
-                        : 'text-blue-100/70 hover:text-white hover:bg-white/[0.08] font-medium'
-                    }`}
-                  >
-                    <Icon className={`w-[18px] h-[18px] shrink-0 ${active ? 'text-white' : 'text-blue-200/60'}`} />
-                    {!sidebarCollapsed && (
-                      <>
-                        <span className="flex-1 text-left text-[13px]">{item.label}</span>
-                        {item.badge && (
-                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                            item.badge === 'LIVE'
-                              ? 'bg-rose-500 text-white animate-pulse shadow-sm shadow-rose-500/50'
-                              : 'bg-amber-400 text-slate-950 shadow-sm shadow-amber-400/30'
-                          }`}>
-                            {item.badge}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </button>
-                );
-              })}
+          return (
+            <div key={section.title}>
+              {!sidebarCollapsed && (
+                <div className="px-2.5 mb-1.5 text-[10px] font-semibold tracking-wider uppercase text-slate-400 dark:text-slate-500">
+                  {section.title}
+                </div>
+              )}
+              <div className="space-y-0.5">
+                {visibleItems.map(item => {
+                  const Icon = item.icon;
+                  const active = activeView === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveView(item.id)}
+                      title={sidebarCollapsed ? item.label : undefined}
+                      className={`w-full h-9 flex items-center rounded-lg transition-colors text-[13px] ${
+                        sidebarCollapsed ? 'justify-center px-0' : 'px-2.5 gap-2.5'
+                      } ${
+                        active
+                          ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold border border-slate-200/80 dark:border-slate-700/80'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                      {!sidebarCollapsed && (
+                        <>
+                          <span className="flex-1 text-left truncate">{item.label}</span>
+                          {item.badge && (
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${item.badgeColor || 'bg-slate-200 text-slate-700'}`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-white/10 space-y-1">
-        {!sidebarCollapsed && (
-          <button
-            onClick={() => setActiveView('schoolSettings')}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-blue-100/70 hover:text-white hover:bg-white/[0.08] text-[13px] font-semibold transition-colors"
-          >
-            <Settings className="w-[18px] h-[18px]" />
-            Настройки школы
-          </button>
-        )}
+      {/* Footer: Settings & Collapse */}
+      <div className="p-2 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-1">
+        <button
+          onClick={() => setActiveView('schoolSettings')}
+          className={`flex items-center gap-2 p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors ${
+            sidebarCollapsed ? 'mx-auto' : 'flex-1'
+          }`}
+          title="Настройки школы"
+        >
+          <SlidersHorizontal className="w-4 h-4 shrink-0" />
+          {!sidebarCollapsed && <span>Настройки</span>}
+        </button>
         <button
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-blue-200/50 hover:text-white hover:bg-white/[0.08] text-xs transition-colors"
+          className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs transition-colors shrink-0"
+          title={sidebarCollapsed ? "Развернуть меню" : "Свернуть меню"}
         >
           {sidebarCollapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
-          {!sidebarCollapsed && <span>Свернуть меню</span>}
         </button>
       </div>
     </aside>
