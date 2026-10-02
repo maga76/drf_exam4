@@ -269,3 +269,31 @@
 .animate-pulse-glow {
   animation: pulseGlow 2.5s ease-in-out infinite;
 }
+
+/* Mobile Drawer Slide In */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mobile Bottom Sheet Entrance */
+@keyframes bottomSheetUp {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-bottom-sheet {
+  animation: bottomSheetUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Mobile Touch Optimizations */
+@media (max-width: 640px) {
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}

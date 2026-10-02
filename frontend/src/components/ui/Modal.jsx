@@ -30,22 +30,27 @@ export const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 max-sm:p-0 max-sm:items-end overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity animate-backdrop-fade"
         onClick={onClose}
       />
 
-      {/* Modal Card */}
+      {/* Modal Card / Mobile Bottom Sheet */}
       <div
-        className={`relative w-full ${maxWidth} bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden transform transition-all z-10 my-8 animate-modal-pop ${className}`}
+        className={`relative w-full ${maxWidth} bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-2xl max-sm:rounded-b-none max-sm:rounded-t-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800/80 max-sm:border-b-0 overflow-hidden transform transition-all z-10 my-8 max-sm:my-0 max-sm:max-h-[92vh] animate-modal-pop max-sm:animate-bottom-sheet ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Pull Indicator */}
+        <div className="sm:hidden pt-2.5 pb-1 flex justify-center">
+          <div className="w-10 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full" />
+        </div>
+
         {/* Header */}
-        <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-start justify-between px-6 py-4 max-sm:px-5 max-sm:py-3 border-b border-slate-100 dark:border-slate-800/80">
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
               {title}
             </h3>
             {subtitle && (
@@ -56,7 +61,7 @@ export const Modal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
