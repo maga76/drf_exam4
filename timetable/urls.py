@@ -18,6 +18,6 @@ router.register(r'rooms', RoomViewSet, basename='timetable-room')
 router.register(r'schedules', ScheduleViewSet, basename='timetable-schedule')
 
 urlpatterns = [
-    path('', schedule_dashboard, name='timetable_dashboard'),
+    path('timetable/', schedule_dashboard, name='timetable_dashboard'),
     path('api/timetable/', include(router.urls)),
 ]
