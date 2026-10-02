@@ -27,8 +27,11 @@ export const SubstitutionsView = () => {
     teachers,
     classes,
     classrooms,
-    addToast
+    addToast,
+    role
   } = useApp();
+
+  const canManageSubstitutions = ['super_admin', 'admin', 'curriculum_director'].includes(role);
 
   const [activeTab, setActiveTab] = useState('all'); // all | pending | confirmed | cancelled
   const [search, setSearch] = useState('');
@@ -67,18 +70,24 @@ export const SubstitutionsView = () => {
   });
 
   const handleConfirmSub = (id) => {
+    if (!canManageSubstitutions) return;
     setSubstitutions(prev => prev.map(s => s.id === id ? { ...s, status: 'confirmed' } : s));
     addToast({ type: 'success', title: 'Замена подтверждена', message: 'Уведомление отправлено заменяющему учителю' });
     setDetailModalOpen(false);
   };
 
   const handleCancelSub = (id) => {
+    if (!canManageSubstitutions) return;
     setSubstitutions(prev => prev.map(s => s.id === id ? { ...s, status: 'cancelled' } : s));
     addToast({ type: 'info', title: 'Замена отменена', message: 'Статус заменён на отменённый' });
     setDetailModalOpen(false);
   };
 
   const handleCreateSub = () => {
+    if (!canManageSubstitutions) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Оформлять замены может только администрация школы' });
+      return;
+    }
     const selectedClass = classes.find(c => c.id === newSubForm.classId);
     const origTeacher = teachers.find(t => t.id === newSubForm.originalTeacherId);
     const replTeacher = teachers.find(t => t.id === newSubForm.replacementTeacherId);
@@ -187,13 +196,15 @@ export const SubstitutionsView = () => {
           </p>
         </div>
 
-        <Button
-          size="sm"
-          icon={Plus}
-          onClick={() => setCreateModalOpen(true)}
-        >
-          Оформить замену
-        </Button>
+        {canManageSubstitutions && (
+          <Button
+            size="sm"
+            icon={Plus}
+            onClick={() => setCreateModalOpen(true)}
+          >
+            Оформить замену
+          </Button>
+        )}
       </div>
 
       {/* Tabs */}
