@@ -19,7 +19,8 @@ import { Modal } from '../components/ui/Modal';
 import { Input, Select, SearchInput } from '../components/ui/Input';
 
 export const ClassroomsView = () => {
-  const { classrooms, setClassrooms, addToast } = useApp();
+  const { classrooms, setClassrooms, addToast, role } = useApp();
+  const canManageRooms = ['super_admin', 'admin', 'curriculum_director'].includes(role);
 
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -58,6 +59,7 @@ export const ClassroomsView = () => {
   });
 
   const handleOpenAdd = () => {
+    if (!canManageRooms) return;
     setEditingRoom(null);
     setRoomForm({
       number: '',
@@ -71,12 +73,17 @@ export const ClassroomsView = () => {
   };
 
   const handleOpenEdit = (r) => {
+    if (!canManageRooms) return;
     setEditingRoom(r);
     setRoomForm({ ...r });
     setEditModalOpen(true);
   };
 
   const handleSave = () => {
+    if (!canManageRooms) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Ученики и гости не могут управлять фондом аудиторий' });
+      return;
+    }
     if (!roomForm.number) return;
 
     if (editingRoom) {
@@ -116,9 +123,11 @@ export const ClassroomsView = () => {
           >
             Найти свободный кабинет
           </Button>
-          <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
-            Добавить кабинет
-          </Button>
+          {canManageRooms && (
+            <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
+              Добавить кабинет
+            </Button>
+          )}
         </div>
       </div>
 
@@ -210,9 +219,11 @@ export const ClassroomsView = () => {
                 >
                   Посмотреть расписание &rarr;
                 </button>
-                <Button size="sm" variant="ghost" onClick={() => handleOpenEdit(room)}>
-                  <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-                </Button>
+                {canManageRooms && (
+                  <Button size="sm" variant="ghost" onClick={() => handleOpenEdit(room)}>
+                    <Edit2 className="w-3.5 h-3.5 text-slate-400" />
+                  </Button>
+                )}
               </div>
             </div>
           );
