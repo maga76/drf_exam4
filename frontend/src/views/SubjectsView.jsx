@@ -17,7 +17,8 @@ import { Modal } from '../components/ui/Modal';
 import { Input, Select, SearchInput } from '../components/ui/Input';
 
 export const SubjectsView = () => {
-  const { subjects, setSubjects, addToast } = useApp();
+  const { subjects, setSubjects, addToast, role } = useApp();
+  const canManageSubjects = ['super_admin', 'admin', 'curriculum_director'].includes(role);
 
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,24 +32,30 @@ export const SubjectsView = () => {
   });
 
   const filtered = subjects.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.shortName.toLowerCase().includes(search.toLowerCase()) ||
-    s.code.toLowerCase().includes(search.toLowerCase())
+    (s.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (s.shortName || '').toLowerCase().includes(search.toLowerCase()) ||
+    (s.code || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const handleOpenAdd = () => {
+    if (!canManageSubjects) return;
     setEditingSubject(null);
     setForm({ name: '', shortName: '', code: '', roomType: 'regular', weeklyHours: 3 });
     setModalOpen(true);
   };
 
   const handleOpenEdit = (s) => {
+    if (!canManageSubjects) return;
     setEditingSubject(s);
     setForm({ ...s });
     setModalOpen(true);
   };
 
   const handleSave = () => {
+    if (!canManageSubjects) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Только администрация школы может редактировать предметы' });
+      return;
+    }
     if (!form.name) return;
 
     if (editingSubject) {
@@ -101,11 +108,13 @@ export const SubjectsView = () => {
       title: 'Действия',
       align: 'right',
       render: (_, row) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button size="sm" variant="ghost" onClick={() => handleOpenEdit(row)}>
-            <Edit2 className="w-4 h-4 text-slate-500" />
-          </Button>
-        </div>
+        canManageSubjects ? (
+          <div className="flex items-center justify-end gap-1">
+            <Button size="sm" variant="ghost" onClick={() => handleOpenEdit(row)}>
+              <Edit2 className="w-4 h-4 text-slate-500" />
+            </Button>
+          </div>
+        ) : null
       )
     }
   ];
@@ -123,9 +132,11 @@ export const SubjectsView = () => {
           </p>
         </div>
 
-        <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
-          Добавить предмет
-        </Button>
+        {canManageSubjects && (
+          <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
+            Добавить предмет
+          </Button>
+        )}
       </div>
 
       <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card">
