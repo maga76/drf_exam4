@@ -67,7 +67,7 @@ export const Sidebar = () => {
       title: 'Преподаватели',
       items: [
         { id: 'teachers', label: 'Учителя', icon: GraduationCap, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'substitutions', label: 'Замены уроков', icon: Repeat2, badge: '2', badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200' }
+        { id: 'substitutions', label: 'Замены уроков', icon: Repeat2, badge: '2', badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200', roles: ['super_admin', 'admin', 'curriculum_director', 'teacher', 'homeroom_teacher'] }
       ]
     },
     {
@@ -81,8 +81,8 @@ export const Sidebar = () => {
       title: 'Настройки и Админ',
       items: [
         { id: 'schoolManagement', label: 'Управление школами', icon: Building2, roles: ['super_admin'] },
-        { id: 'classrooms', label: 'Кабинеты', icon: DoorOpen },
-        { id: 'reports', label: 'Аналитика и отчеты', icon: ChartNoAxesCombined },
+        { id: 'classrooms', label: 'Кабинеты', icon: DoorOpen, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
+        { id: 'reports', label: 'Аналитика и отчеты', icon: ChartNoAxesCombined, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
         { id: 'users', label: 'Пользователи и права', icon: ShieldCheck, roles: ['super_admin', 'admin'] },
         { id: 'schoolSettings', label: 'Параметры школы', icon: Settings, roles: ['super_admin', 'admin'] }
       ]
