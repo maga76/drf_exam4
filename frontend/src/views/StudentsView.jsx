@@ -3,17 +3,11 @@ import {
   Users,
   Plus,
   Upload,
-  Search,
-  Filter,
   Eye,
   Edit2,
-  Trash2,
   ArrowRightLeft,
   FileSpreadsheet,
-  CheckCircle,
-  Award,
   Phone,
-  Calendar,
   Archive
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -144,13 +138,13 @@ export const StudentsView = () => {
           <img
             src={row.avatar}
             alt={row.fullName}
-            className="w-9 h-9 rounded-xl object-cover ring-1 ring-slate-200 dark:ring-slate-700"
+            className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
           />
           <div>
-            <span className="font-semibold text-slate-900 dark:text-slate-100 block">
+            <span className="font-medium text-slate-900 dark:text-slate-100 block">
               {row.fullName}
             </span>
-            <span className="text-xs text-slate-400 font-mono">{row.studentCode}</span>
+            <span className="text-[11px] text-slate-400 font-mono">{row.studentCode}</span>
           </div>
         </div>
       )
@@ -160,9 +154,9 @@ export const StudentsView = () => {
       title: 'Класс',
       sortable: true,
       render: (val) => (
-        <span className="px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 font-bold text-xs text-indigo-700 dark:text-indigo-300">
+        <Badge variant="neutral" size="sm">
           {val}
-        </span>
+        </Badge>
       )
     },
     {
@@ -191,9 +185,9 @@ export const StudentsView = () => {
       title: 'Ср. балл',
       sortable: true,
       render: (val) => (
-        <span className="font-bold text-xs text-emerald-600 dark:text-emerald-400">
+        <Badge variant="success" size="sm">
           ★ {val}
-        </span>
+        </Badge>
       )
     },
     {
@@ -215,15 +209,17 @@ export const StudentsView = () => {
               setSelectedStudent(row);
               setProfileModalOpen(true);
             }}
+            title="Просмотр"
           >
-            <Eye className="w-4 h-4 text-slate-500" />
+            <Eye className="w-3.5 h-3.5 text-slate-500" />
           </Button>
           <Button
             size="sm"
             variant="ghost"
             onClick={() => handleOpenEdit(row)}
+            title="Редактировать"
           >
-            <Edit2 className="w-4 h-4 text-slate-500" />
+            <Edit2 className="w-3.5 h-3.5 text-slate-500" />
           </Button>
           <Button
             size="sm"
@@ -232,8 +228,9 @@ export const StudentsView = () => {
               setStudentToArchive(row);
               setArchiveConfirmOpen(true);
             }}
+            title="В архив"
           >
-            <Archive className="w-4 h-4 text-rose-500" />
+            <Archive className="w-3.5 h-3.5 text-rose-500" />
           </Button>
         </div>
       )
@@ -241,16 +238,16 @@ export const StudentsView = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Users className="w-6 h-6 text-indigo-600" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Users className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             Реестр учеников
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Всего {students.length} учащихся в текущей выборке • Успеваемость, контакты родителей и документы
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Всего {students.length} учащихся · Личные дела, успеваемость и контакты
           </p>
         </div>
 
@@ -261,7 +258,7 @@ export const StudentsView = () => {
             icon={Upload}
             onClick={() => setImportModalOpen(true)}
           >
-            Массовый импорт (CSV)
+            Импорт (CSV)
           </Button>
           <Button
             size="sm"
@@ -274,7 +271,7 @@ export const StudentsView = () => {
       </div>
 
       {/* Filters Toolbar */}
-      <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="w-full max-w-sm">
           <SearchInput
             placeholder="Поиск по ФИО, номеру дела или классу..."
@@ -297,12 +294,12 @@ export const StudentsView = () => {
         </div>
       </div>
 
-      {/* Students Table */}
+      {/* Frappe DocType-style Table */}
       <Table
         columns={columns}
         data={filteredStudents}
         emptyTitle="Ученики не найдены"
-        emptyDescription="Попробуйте сбросить фильтры или добавить нового ученика"
+        emptyDescription="Попробуйте изменить поисковый запрос или сбросить фильтры"
       />
 
       {/* Modal: Student Detailed Profile */}
@@ -311,57 +308,56 @@ export const StudentsView = () => {
           isOpen={profileModalOpen}
           onClose={() => setProfileModalOpen(false)}
           title={`Личное дело: ${selectedStudent.fullName}`}
-          subtitle={`Класс: ${selectedStudent.className} • ID: ${selectedStudent.studentCode}`}
-          maxWidth="max-w-2xl"
+          subtitle={`Класс: ${selectedStudent.className} · ID: ${selectedStudent.studentCode}`}
+          maxWidth="max-w-xl"
           footer={
             <div className="flex items-center justify-between w-full">
               <Button
                 variant="outline"
+                size="sm"
                 icon={ArrowRightLeft}
                 onClick={() => setTransferModalOpen(true)}
               >
                 Перевести в другой класс
               </Button>
-              <Button onClick={() => setProfileModalOpen(false)}>
+              <Button size="sm" onClick={() => setProfileModalOpen(false)}>
                 Закрыть
               </Button>
             </div>
           }
         >
-          <div className="space-y-5 text-xs sm:text-sm">
-            {/* Top row */}
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+          <div className="space-y-4 text-xs sm:text-sm">
+            <div className="flex items-center gap-4 p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
               <img
                 src={selectedStudent.avatar}
                 alt={selectedStudent.fullName}
-                className="w-16 h-16 rounded-2xl object-cover ring-2 ring-indigo-500/20"
+                className="w-14 h-14 rounded-full object-cover border border-slate-200 dark:border-slate-700"
               />
-              <div className="space-y-1">
-                <div className="font-bold text-base text-slate-900 dark:text-slate-100">
+              <div className="space-y-0.5">
+                <div className="font-bold text-sm text-slate-900 dark:text-slate-100">
                   {selectedStudent.fullName}
                 </div>
-                <div className="text-slate-500">Дата рождения: {selectedStudent.birthDate} • Адрес: {selectedStudent.address}</div>
+                <div className="text-slate-500">Дата рождения: {selectedStudent.birthDate} · Адрес: {selectedStudent.address}</div>
                 <div className="flex items-center gap-3 pt-1">
-                  <span className="font-semibold text-emerald-600">Средний балл: {selectedStudent.gpa}</span>
-                  <span className="text-slate-400">•</span>
-                  <span className="font-semibold text-indigo-600">Посещаемость: {selectedStudent.attendanceRate}%</span>
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-400">Средний балл: {selectedStudent.gpa}</span>
+                  <span className="text-slate-300">·</span>
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">Посещаемость: {selectedStudent.attendanceRate}%</span>
                 </div>
               </div>
             </div>
 
-            {/* Parents block */}
             <div>
-              <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
+              <h4 className="font-semibold text-xs uppercase tracking-wider text-slate-500 mb-2">
                 Родители и законные представители
               </h4>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {selectedStudent.parents?.map((p, idx) => (
-                  <div key={idx} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <div key={idx} className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{p.name} ({p.relation})</span>
-                      <p className="text-xs text-slate-500 mt-0.5">{p.phone}</p>
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{p.name} ({p.relation})</span>
+                      <p className="text-xs text-slate-400 mt-0.5">{p.phone}</p>
                     </div>
-                    <Button size="sm" variant="secondary" icon={Phone}>Позвонить</Button>
+                    <Button size="sm" variant="secondary" icon={Phone}>Связаться</Button>
                   </div>
                 ))}
               </div>
@@ -374,17 +370,17 @@ export const StudentsView = () => {
       <Modal
         isOpen={transferModalOpen}
         onClose={() => setTransferModalOpen(false)}
-        title="Перевод ученика в другой класс"
-        subtitle={`Перевод учащегося ${selectedStudent?.fullName} из ${selectedStudent?.className}`}
+        title="Перевод в другой класс"
+        subtitle={`Учащийся ${selectedStudent?.fullName} из ${selectedStudent?.className}`}
         maxWidth="max-w-md"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setTransferModalOpen(false)}>Отмена</Button>
-            <Button onClick={handleTransfer}>Подтвердить перевод</Button>
+            <Button variant="secondary" size="sm" onClick={() => setTransferModalOpen(false)}>Отмена</Button>
+            <Button size="sm" onClick={handleTransfer}>Подтвердить перевод</Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Select
             label="Целевой класс"
             value={targetClassId}
@@ -394,7 +390,7 @@ export const StudentsView = () => {
               <option key={c.id} value={c.id}>{c.name} ({c.homeroomTeacher})</option>
             ))}
           </Select>
-          <Input label="Причина перевода" placeholder="Заявление родителей, смена профиля..." />
+          <Input label="Причина перевода" placeholder="Заявление родителей, сменился профиль..." />
         </div>
       </Modal>
 
@@ -402,32 +398,30 @@ export const StudentsView = () => {
       <Modal
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        title="Массовый импорт учеников (Excel / CSV)"
-        subtitle="Загрузите файл со списком учащихся для быстрой регистрации"
+        title="Импорт учащихся (CSV / Excel)"
+        subtitle="Загрузите файл со списком для пакетного зачисления"
         maxWidth="max-w-lg"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setImportModalOpen(false)}>Отмена</Button>
+            <Button variant="secondary" size="sm" onClick={() => setImportModalOpen(false)}>Отмена</Button>
             <Button
+              size="sm"
               onClick={() => {
-                addToast({ type: 'success', title: 'Импорт успешен', message: 'Загружено 24 новых ученика' });
+                addToast({ type: 'success', title: 'Импорт завершен', message: 'Загружено 24 новых ученика' });
                 setImportModalOpen(false);
               }}
             >
-              Импортировать файл
+              Импортировать
             </Button>
           </>
         }
       >
-        <div className="p-6 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl text-center space-y-3">
-          <FileSpreadsheet className="w-10 h-10 text-indigo-600 mx-auto" />
-          <div>
-            <span className="font-semibold text-sm">Перетащите сюда файл .xlsx или .csv</span>
-            <p className="text-xs text-slate-400 mt-1">Или нажмите для выбора файла на диске</p>
+        <div className="p-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-center space-y-2">
+          <FileSpreadsheet className="w-8 h-8 text-slate-500 mx-auto" />
+          <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Перетащите файл .csv или .xlsx сюда
           </div>
-          <button className="text-xs text-indigo-600 hover:underline font-medium">
-            Скачать типовой шаблон Excel &darr;
-          </button>
+          <p className="text-xs text-slate-400">Формат: ФИО, Класс, Дата рождения, Телефон родителя</p>
         </div>
       </Modal>
 
@@ -435,19 +429,19 @@ export const StudentsView = () => {
       <Modal
         isOpen={editModalOpen}
         onClose={() => setEditModalOpen(false)}
-        title={editingStudent ? "Редактирование ученика" : "Зачисление нового ученика"}
+        title={editingStudent ? "Редактирование данных" : "Зачисление ученика"}
         maxWidth="max-w-lg"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setEditModalOpen(false)}>Отмена</Button>
-            <Button onClick={handleSaveStudent}>Сохранить</Button>
+            <Button variant="secondary" size="sm" onClick={() => setEditModalOpen(false)}>Отмена</Button>
+            <Button size="sm" onClick={handleSaveStudent}>Сохранить</Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Input
             label="ФИО ученика"
-            placeholder="Шарипов Алишер Фарходович"
+            placeholder="Фамилия Имя Отчество"
             value={studentForm.fullName}
             onChange={(e) => setStudentForm({ ...studentForm, fullName: e.target.value })}
             required
@@ -472,7 +466,7 @@ export const StudentsView = () => {
 
           <Input
             label="Домашний адрес"
-            placeholder="г. Душанбе, ул. Рудаки..."
+            placeholder="Город, улица, дом..."
             value={studentForm.address}
             onChange={(e) => setStudentForm({ ...studentForm, address: e.target.value })}
           />
@@ -485,8 +479,8 @@ export const StudentsView = () => {
         onClose={() => setArchiveConfirmOpen(false)}
         onConfirm={handleArchive}
         title="Архивация личного дела"
-        message={`Переместить личное дело учащегося «${studentToArchive?.fullName}» в архив школы? Доступ к дневнику будет приостановлен.`}
-        confirmText="Архивировать"
+        message={`Переместить дело учащегося «${studentToArchive?.fullName}» в архив школы?`}
+        confirmText="В архив"
       />
     </div>
   );
