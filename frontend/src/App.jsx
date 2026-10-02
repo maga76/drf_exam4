@@ -30,6 +30,7 @@ import { SchoolSettingsView } from './views/SchoolSettingsView';
 import { UserProfileView } from './views/UserProfileView';
 import { ReportsView } from './views/ReportsView';
 import { ErrorStatesView } from './views/ErrorStatesView';
+import { AIAssistantView } from './views/AIAssistantView';
 
 export const App = () => {
   const { activeView, role } = useApp();
@@ -61,6 +62,8 @@ export const App = () => {
         return <ScheduleView />;
       case 'scheduleWizard':
         return <ScheduleWizardView />;
+      case 'aiAssistant':
+        return <AIAssistantView />;
       case 'liveLessons':
         return <LiveLessonsView />;
       case 'substitutions':

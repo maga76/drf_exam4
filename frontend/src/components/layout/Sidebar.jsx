@@ -22,7 +22,8 @@ import {
   PanelLeftOpen,
   Building2,
   Bell,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -33,58 +34,60 @@ export const Sidebar = () => {
     sidebarCollapsed,
     setSidebarCollapsed,
     currentSchool,
-    role
+    role,
+    t
   } = useApp();
 
   const sections = [
     {
-      title: 'Рабочие столы',
+      title: t('sidebar.workspaces'),
       items: [
-        { id: 'dashboard', label: 'Обзор школы', icon: LayoutDashboard },
-        { id: 'liveLessons', label: 'Школа сейчас', icon: Radio, badge: 'LIVE', badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+        { id: 'liveLessons', label: t('nav.liveLessons'), icon: Radio, badge: 'LIVE', badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300' }
       ]
     },
     {
-      title: 'Учебный процесс',
+      title: t('sidebar.academics'),
       items: [
-        { id: 'classes', label: 'Классы', icon: School },
-        { id: 'subjects', label: 'Предметы', icon: LibraryBig, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'schedule', label: 'Расписание', icon: CalendarDays },
-        { id: 'scheduleWizard', label: 'AI-мастер расписания', icon: WandSparkles, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'yearsAndShifts', label: 'Годы и смены', icon: CalendarRange, roles: ['super_admin', 'admin'] }
+        { id: 'classes', label: t('nav.classes'), icon: School },
+        { id: 'subjects', label: t('nav.subjects'), icon: LibraryBig, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'schedule', label: t('nav.schedule'), icon: CalendarDays },
+        { id: 'scheduleWizard', label: t('nav.scheduleWizard'), icon: WandSparkles, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'aiAssistant', label: t('nav.aiAssistant'), icon: Sparkles, badge: 'AI', badgeColor: 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xs' },
+        { id: 'yearsAndShifts', label: t('nav.yearsAndShifts'), icon: CalendarRange, roles: ['super_admin', 'admin'] }
       ]
     },
     {
-      title: 'Ученики',
+      title: t('sidebar.students'),
       items: [
-        { id: 'students', label: 'Ученики', icon: Users, roles: ['super_admin', 'admin', 'curriculum_director', 'homeroom_teacher'] },
-        { id: 'attendance', label: 'Посещаемость', icon: ClipboardCheck },
-        { id: 'grades', label: 'Журнал оценок', icon: BookOpenCheck },
-        { id: 'homework', label: 'Домашние задания', icon: NotebookTabs }
+        { id: 'students', label: t('nav.students'), icon: Users, roles: ['super_admin', 'admin', 'curriculum_director', 'homeroom_teacher'] },
+        { id: 'attendance', label: t('nav.attendance'), icon: ClipboardCheck },
+        { id: 'grades', label: t('nav.grades'), icon: BookOpenCheck },
+        { id: 'homework', label: t('nav.homework'), icon: NotebookTabs }
       ]
     },
     {
-      title: 'Преподаватели',
+      title: t('sidebar.teachers'),
       items: [
-        { id: 'teachers', label: 'Учителя', icon: GraduationCap, roles: ['super_admin', 'admin', 'curriculum_director'] },
-        { id: 'substitutions', label: 'Замены уроков', icon: Repeat2, badge: '2', badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200', roles: ['super_admin', 'admin', 'curriculum_director', 'teacher', 'homeroom_teacher'] }
+        { id: 'teachers', label: t('nav.teachers'), icon: GraduationCap, roles: ['super_admin', 'admin', 'curriculum_director'] },
+        { id: 'substitutions', label: t('nav.substitutions'), icon: Repeat2, badge: '2', badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200', roles: ['super_admin', 'admin', 'curriculum_director', 'teacher', 'homeroom_teacher'] }
       ]
     },
     {
-      title: 'Коммуникация',
+      title: t('sidebar.communication'),
       items: [
-        { id: 'announcements', label: 'Объявления', icon: Megaphone },
-        { id: 'notifications', label: 'Уведомления', icon: Bell }
+        { id: 'announcements', label: t('nav.announcements'), icon: Megaphone },
+        { id: 'notifications', label: t('nav.notifications'), icon: Bell }
       ]
     },
     {
-      title: 'Настройки и Админ',
+      title: t('sidebar.settings'),
       items: [
-        { id: 'schoolManagement', label: 'Управление школами', icon: Building2, roles: ['super_admin'] },
-        { id: 'classrooms', label: 'Кабинеты', icon: DoorOpen, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
-        { id: 'reports', label: 'Аналитика и отчеты', icon: ChartNoAxesCombined, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
-        { id: 'users', label: 'Пользователи и права', icon: ShieldCheck, roles: ['super_admin', 'admin'] },
-        { id: 'schoolSettings', label: 'Параметры школы', icon: Settings, roles: ['super_admin', 'admin'] }
+        { id: 'schoolManagement', label: t('nav.schoolManagement'), icon: Building2, roles: ['super_admin'] },
+        { id: 'classrooms', label: t('nav.classrooms'), icon: DoorOpen, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
+        { id: 'reports', label: t('nav.reports'), icon: ChartNoAxesCombined, roles: ['super_admin', 'admin', 'curriculum_director', 'teacher'] },
+        { id: 'users', label: t('nav.users'), icon: ShieldCheck, roles: ['super_admin', 'admin'] },
+        { id: 'schoolSettings', label: t('nav.settings'), icon: Settings, roles: ['super_admin', 'admin'] }
       ]
     }
   ];

@@ -27,7 +27,9 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   // Localization & Theme
-  const [language, setLanguage] = useState('ru');
+  const [language, setLanguageState] = useState(() => {
+    return localStorage.getItem('smart_school_lang') || 'ru';
+  });
   const [theme, setTheme] = useState('light');
 
   // Role: super_admin | admin | curriculum_director | teacher | homeroom_teacher | student | parent
@@ -230,6 +232,18 @@ export const AppProvider = ({ children }) => {
       title: 'Роль переключена',
       message: `Интерфейс адаптирован под роль: ${translations[language]?.roles[newRole] || newRole}`
     });
+  };
+
+  const setLanguage = (lang) => {
+    setLanguageState(lang);
+    localStorage.setItem('smart_school_lang', lang);
+    const msgs = {
+      tj: { title: 'Забон иваз карда шуд', desc: 'Забони тоҷикӣ фаъол шуд' },
+      en: { title: 'Language updated', desc: 'Switched to English' },
+      ru: { title: 'Язык изменён', desc: 'Выбран русский язык' }
+    };
+    const m = msgs[lang] || msgs.ru;
+    addToast({ type: 'info', title: m.title, message: m.desc });
   };
 
   const toggleTheme = () => {

@@ -38,9 +38,19 @@ export const translations = {
       yearsAndShifts: "Учебные годы и смены",
       liveLessons: "Живые уроки",
       scheduleWizard: "Генератор расписания",
+      aiAssistant: "AI-Ассистент",
       profile: "Профиль",
       errorStates: "Ошибки & Состояния",
       logout: "Выйти"
+    },
+
+    sidebar: {
+      workspaces: "Рабочие столы",
+      academics: "Учебный процесс",
+      students: "Ученики",
+      teachers: "Преподаватели",
+      communication: "Коммуникация",
+      settings: "Настройки и Админ"
     },
 
     // Topbar & Common
@@ -148,9 +158,19 @@ export const translations = {
       yearsAndShifts: "Солҳои таҳсил ва навбатҳо",
       liveLessons: "Дарсҳои ҷорӣ",
       scheduleWizard: "Сохтани ҷадвал",
+      aiAssistant: "Ёвари AI",
       profile: "Профил",
       errorStates: "Хатогиҳо ва ҳолатҳо",
       logout: "Баромад"
+    },
+
+    sidebar: {
+      workspaces: "Мизҳои корӣ",
+      academics: "Раванди таълим",
+      students: "Хонандагон",
+      teachers: "Омӯзгорон",
+      communication: "Муошират",
+      settings: "Танзимот ва Маъмурият"
     },
 
     searchPlaceholder: "Ҷустуҷӯи хонандагон, омӯзгорон, синфҳо (Ctrl + K)...",
@@ -253,9 +273,19 @@ export const translations = {
       yearsAndShifts: "Years & Shifts",
       liveLessons: "Live Lessons",
       scheduleWizard: "Schedule Generator",
+      aiAssistant: "AI Assistant",
       profile: "Profile",
       errorStates: "Errors & States",
       logout: "Log Out"
+    },
+
+    sidebar: {
+      workspaces: "Workspaces",
+      academics: "Academics",
+      students: "Students",
+      teachers: "Teachers",
+      communication: "Communication",
+      settings: "Settings & Admin"
     },
 
     searchPlaceholder: "Search students, teachers, classes (Ctrl + K)...",
