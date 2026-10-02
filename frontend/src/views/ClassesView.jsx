@@ -45,9 +45,9 @@ export const ClassesView = () => {
   });
 
   const filtered = classes.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.homeroomTeacher.toLowerCase().includes(search.toLowerCase()) ||
-    c.roomNumber.toLowerCase().includes(search.toLowerCase())
+    (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.homeroomTeacher || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.roomNumber || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const handleOpenAdd = () => {

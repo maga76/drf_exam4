@@ -59,10 +59,10 @@ export const SubstitutionsView = () => {
   const filtered = substitutions.filter(s => {
     const matchesTab = activeTab === 'all' || s.status === activeTab;
     const matchesSearch =
-      s.className.toLowerCase().includes(search.toLowerCase()) ||
-      s.subject.toLowerCase().includes(search.toLowerCase()) ||
-      s.originalTeacher.toLowerCase().includes(search.toLowerCase()) ||
-      s.replacementTeacher.toLowerCase().includes(search.toLowerCase());
+      (s.className || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.subject || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.originalTeacher || '').toLowerCase().includes(search.toLowerCase()) ||
+      (s.replacementTeacher || '').toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
   });
 

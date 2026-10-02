@@ -45,17 +45,22 @@ export const CommandPalette = () => {
 
   const q = query.toLowerCase().trim();
 
-  // Search Results
+  // Search Results with safe guards against null/undefined
   const matchedStudents = students.filter(s =>
-    s.fullName.toLowerCase().includes(q) || s.studentCode.toLowerCase().includes(q) || s.className.toLowerCase().includes(q)
+    (s.fullName || '').toLowerCase().includes(q) ||
+    (s.studentCode || '').toLowerCase().includes(q) ||
+    (s.className || '').toLowerCase().includes(q)
   ).slice(0, 3);
 
   const matchedTeachers = teachers.filter(tch =>
-    tch.fullName.toLowerCase().includes(q) || tch.subjectName.toLowerCase().includes(q) || tch.roomNumber.toLowerCase().includes(q)
+    (tch.fullName || '').toLowerCase().includes(q) ||
+    (tch.subjectName || '').toLowerCase().includes(q) ||
+    (tch.roomNumber || '').toLowerCase().includes(q)
   ).slice(0, 3);
 
   const matchedClasses = classes.filter(cls =>
-    cls.name.toLowerCase().includes(q) || cls.homeroomTeacher.toLowerCase().includes(q)
+    (cls.name || '').toLowerCase().includes(q) ||
+    (cls.homeroomTeacher || '').toLowerCase().includes(q)
   ).slice(0, 3);
 
   const quickPages = [
