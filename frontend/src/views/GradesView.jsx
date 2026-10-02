@@ -10,7 +10,8 @@ import { Modal } from '../components/ui/Modal';
 import { Select, Input } from '../components/ui/Input';
 
 export const GradesView = () => {
-  const { classes, subjects, students, gradesMatrix, setGradesMatrix, addToast } = useApp();
+  const { classes, subjects, students, gradesMatrix, setGradesMatrix, addToast, role } = useApp();
+  const canEditGrades = ['super_admin', 'admin', 'curriculum_director', 'teacher', 'homeroom_teacher'].includes(role);
 
   const [selectedClassId, setSelectedClassId] = useState('cls-7a');
   const [selectedSubjectId, setSelectedSubjectId] = useState('sub-1');
@@ -31,6 +32,7 @@ export const GradesView = () => {
   const columns = gradesMatrix.columns;
 
   const handleCellClick = (student, col) => {
+    if (!canEditGrades) return;
     const currentVal = gradesMatrix.grades[student.id]?.[col.id] || null;
     setActiveCell({
       studentId: student.id,
@@ -47,6 +49,10 @@ export const GradesView = () => {
   };
 
   const handleSaveGrade = () => {
+    if (!canEditGrades) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Выставлять оценки могут только преподаватели' });
+      return;
+    }
     if (activeCell) {
       setGradesMatrix(prev => ({
         ...prev,
@@ -221,7 +227,9 @@ export const GradesView = () => {
                       <td
                         key={col.id}
                         onClick={() => handleCellClick(st, col)}
-                        className={`p-1.5 text-center border-l border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors select-none ${
+                        className={`p-1.5 text-center border-l border-slate-100 dark:border-slate-800 select-none ${
+                          canEditGrades ? 'cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors' : 'cursor-default'
+                        } ${
                           col.type === 'control' ? 'bg-amber-50/20 dark:bg-amber-950/10' : ''
                         }`}
                       >
