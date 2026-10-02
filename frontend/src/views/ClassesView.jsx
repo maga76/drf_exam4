@@ -22,7 +22,8 @@ import { Input, Select, SearchInput } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 
 export const ClassesView = () => {
-  const { classes, setClasses, teachers, classrooms, students, schedule, addToast, setActiveView } = useApp();
+  const { classes, setClasses, teachers, classrooms, students, schedule, addToast, setActiveView, role } = useApp();
+  const canManageClasses = ['super_admin', 'admin', 'curriculum_director'].includes(role);
 
   const [viewMode, setViewMode] = useState('cards'); // cards | table
   const [search, setSearch] = useState('');
@@ -51,6 +52,7 @@ export const ClassesView = () => {
   );
 
   const handleOpenAdd = () => {
+    if (!canManageClasses) return;
     setEditingClass(null);
     setForm({
       grade: 8,
@@ -65,12 +67,17 @@ export const ClassesView = () => {
   };
 
   const handleOpenEdit = (cls) => {
+    if (!canManageClasses) return;
     setEditingClass(cls);
     setForm({ ...cls });
     setEditModalOpen(true);
   };
 
   const handleSave = () => {
+    if (!canManageClasses) {
+      addToast({ type: 'danger', title: 'Отказ в доступе', message: 'Ученики и родители не могут создавать классы' });
+      return;
+    }
     const className = `${form.grade}${form.letter}`;
     if (editingClass) {
       setClasses(prev => prev.map(c => c.id === editingClass.id ? { ...c, ...form, name: className } : c));
@@ -170,9 +177,11 @@ export const ClassesView = () => {
           </p>
         </div>
 
-        <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
-          Создать класс
-        </Button>
+        {canManageClasses && (
+          <Button size="sm" icon={Plus} onClick={handleOpenAdd}>
+            Создать класс
+          </Button>
+        )}
       </div>
 
       {/* Toolbar: Search & View Switcher (Cards / Table) */}
