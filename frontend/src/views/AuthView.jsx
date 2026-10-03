@@ -37,8 +37,8 @@ export const AuthView = () => {
   const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   
   // Login form state
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
@@ -116,18 +116,6 @@ export const AuthView = () => {
       setPassword(registerPassword);
       setAuthMode('login');
     }, 700);
-  };
-
-  const handleQuickLogin = (roleKey, userLogin) => {
-    switchRole(roleKey);
-    setUsername(userLogin);
-    setPassword('demo2026');
-    addToast({
-      type: 'info',
-      title: 'Демо вход',
-      message: `Выполнен вход под ролью: ${roleKey}`
-    });
-    setActiveView('dashboard');
   };
 
   return (
@@ -474,51 +462,6 @@ export const AuthView = () => {
                 </Button>
               </form>
             )}
-          </div>
-
-          {/* Quick Demo Switcher Section */}
-          <div className="mt-8 pt-5 border-t border-slate-150 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Быстрый вход для проверки ролей (Демо)
-              </span>
-              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium">1 клик</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin', 'admin.school12@smartschool.tj')}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-all"
-              >
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">Админ</div>
-                <div className="text-[10px] text-slate-400 truncate">Школа №12</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('teacher', 'karimova.m@school12.tj')}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-all"
-              >
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">Учитель</div>
-                <div className="text-[10px] text-slate-400 truncate">Каримова М.</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('student', 'sharipov.alisher')}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-all"
-              >
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">Ученик</div>
-                <div className="text-[10px] text-slate-400 truncate">Шарипов А. (7А)</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('parent', 'sharipov.parent')}
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-all"
-              >
-                <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">Родитель</div>
-                <div className="text-[10px] text-slate-400 truncate">Шарипов Ф.</div>
-              </button>
-            </div>
           </div>
         </div>
       </div>
